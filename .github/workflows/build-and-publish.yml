@@ -1,4 +1,4 @@
-name: Build and Publish Windows Skia DLL with GN
+name: Build and Publish Windows Skia DLL with GN and Ninja
 
 on:
   push:
@@ -28,10 +28,26 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Build Skia with GN
+      - name: Install GN
         run: |
           cd skia
           python tools/git-sync-deps
+          mkdir -p third_party/externals/gn
+          curl -L https://chrome-infra-packages.appspot.com/dl/gn/gn/windows-amd64/+/latest -o gn.zip
+          unzip gn.zip -d third_party/externals/gn
+          export PATH=$PATH:$(pwd)/third_party/externals/gn
+
+      - name: Install Ninja
+        run: |
+          cd skia
+          mkdir -p third_party/externals/ninja
+          curl -L https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -o ninja.zip
+          unzip ninja.zip -d third_party/externals/ninja
+          export PATH=$PATH:$(pwd)/third_party/externals/ninja
+
+      - name: Build Skia with GN and Ninja
+        run: |
+          cd skia
           bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
           ninja -C out/Release
 
@@ -53,4 +69,4 @@ jobs:
         with:
           files: skia/out/Release/skia.dll
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.tk }}
