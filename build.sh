@@ -1,10 +1,16 @@
 #! /usr/bin/env bash
-set -eo pipefail
 
 # These two variables should be set in tandem to keep a consistent set of sources.
 # Last set Sat Jun 15 11:00:00 PDT 2024
 DEPOT_TOOLS_COMMIT=d431af39c998f4ba88bf376f500214d82ece766a
 SKIA_BRANCH=main
+
+export CC=/usr/bin/x86_64-w64-mingw32-gcc
+export CXX=/usr/bin/x86_64-w64-mingw32-g++
+export AR=/usr/bin/x86_64-w64-mingw32-ar
+export STRIP=/usr/bin/x86_64-w64-mingw32-strip
+export PKG_CONFIG_PATH=/usr/x86_64-w64-mingw32/lib/pkgconfig
+
 
 for arg in "$@"; do
 	case "$arg" in
@@ -96,60 +102,6 @@ COMMON_ARGS=" \
 "
 
 case $(uname -s) in
-Darwin*)
-	OS_TYPE=darwin
-	LIB_NAME=libskia.a
-	case $(uname -m) in
-	x86_64*)
-		UNISON_LIB_NAME=libskia_darwin_amd64.a
-		export MACOSX_DEPLOYMENT_TARGET=10.15
-		;;
-	arm*)
-		UNISON_LIB_NAME=libskia_darwin_arm64.a
-		export MACOSX_DEPLOYMENT_TARGET=11
-		;;
-	esac
-	PLATFORM_ARGS=" \
-      skia_enable_fontmgr_win=false \
-      skia_use_fonthost_mac=true \
-      skia_enable_fontmgr_fontconfig=false \
-      skia_use_fontconfig=false \
-      skia_use_freetype=false \
-      skia_use_x11=false \
-      extra_cflags=[ \
-        \"-Wno-unused-command-line-argument\" \
-      ] \
-      extra_cflags_cc=[ \
-        \"-DHAVE_XLOCALE_H\" \
-      ] \
-      extra_cflags_c=[ \
-        \"-DHAVE_ARC4RANDOM_BUF\", \
-        \"-stdlib=libc++\" \
-      ] \
-    "
-	;;
-Linux*)
-	OS_TYPE=linux
-	LIB_NAME=libskia.a
-	UNISON_LIB_NAME=libskia_linux.a
-	PLATFORM_ARGS=" \
-      skia_enable_fontmgr_win=false \
-      skia_use_fonthost_mac=false \
-      skia_enable_fontmgr_fontconfig=true \
-      skia_use_fontconfig=true \
-      skia_use_freetype=true \
-      skia_use_x11=true \
-      extra_cflags=[ \
-        \"-Wno-psabi\" \
-      ] \
-      extra_cflags_cc=[ \
-        \"-DHAVE_XLOCALE_H\" \
-      ] \
-      extra_cflags_c=[ \
-        \"-DHAVE_ARC4RANDOM_BUF\", \
-      ] \
-    "
-	;;
 MINGW*)
 	OS_TYPE=windows
 	LIB_NAME=skia.dll

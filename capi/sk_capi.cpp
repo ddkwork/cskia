@@ -58,6 +58,8 @@
 #include "include/ports/SkFontMgr_fontconfig.h"
 #endif
 
+#define SK_BUILD_FOR_WIN 
+
 #if defined(SK_BUILD_FOR_WIN)
 #include "include/ports/SkTypeface_win.h"
 #endif
