@@ -45,6 +45,14 @@ jobs:
           unzip ninja.zip -d third_party/externals/ninja
           cp third_party/externals/ninja/ninja.exe C:/Windows/System32/
 
+      - name: Install HarfBuzz
+        run: |
+          cd skia
+          mkdir -p third_party/externals/harfbuzz
+          curl -L https://github.com/harfbuzz/harfbuzz/releases/download/2.8.1/harfbuzz-2.8.1-win64.zip -o harfbuzz.zip
+          unzip harfbuzz.zip -d third_party/externals/harfbuzz
+          cp third_party/externals/harfbuzz/include/hb.h C:/Windows/System32/
+
       - name: Build Skia with GN and Ninja
         run: |
           cd skia
