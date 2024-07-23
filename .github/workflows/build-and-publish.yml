@@ -45,10 +45,10 @@ jobs:
           unzip ninja.zip -d third_party/externals/ninja
           cp third_party/externals/ninja/ninja.exe C:/Windows/System32/
 
-      - name: Build Skia with GN and Ninja (Disable PDF)
+      - name: Build Skia with GN and Ninja (Disable ICU)
         run: |
           cd skia
-          bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_enable_pdf=false"
+          bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_enable_pdf=false skia_use_icu=false"
           ninja -C out/Release
 
       - name: Upload artifact
