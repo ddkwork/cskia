@@ -35,7 +35,7 @@ jobs:
           mkdir -p third_party/externals/gn
           curl -L https://chrome-infra-packages.appspot.com/dl/gn/gn/windows-amd64/+/latest -o gn.zip
           unzip gn.zip -d third_party/externals/gn
-          echo "##[add-path]$(pwd)/third_party/externals/gn"
+          echo "GN_PATH=$(pwd)/third_party/externals/gn" >> $GITHUB_ENV
 
       - name: Install Ninja
         run: |
@@ -43,11 +43,12 @@ jobs:
           mkdir -p third_party/externals/ninja
           curl -L https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -o ninja.zip
           unzip ninja.zip -d third_party/externals/ninja
-          echo "##[add-path]$(pwd)/third_party/externals/ninja"
+          echo "NINJA_PATH=$(pwd)/third_party/externals/ninja" >> $GITHUB_ENV
 
       - name: Build Skia with GN and Ninja
         run: |
           cd skia
+          $env:PATH = "$env:GN_PATH;$env:NINJA_PATH;$env:PATH"
           bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
           ninja -C out/Release
 
