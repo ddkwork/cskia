@@ -108,9 +108,15 @@ jobs:
           path: skia/out/Release/skia.dll
           if-no-files-found: error
 
+      - name: Create tag
+        run: |
+          git tag -a v1.0.0 -m "Release v1.0.0"
+          git push origin v1.0.0
+
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           files: skia/out/Release/skia.dll
+          tag_name: v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
