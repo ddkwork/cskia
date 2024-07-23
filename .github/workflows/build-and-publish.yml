@@ -18,7 +18,7 @@ jobs:
         with:
           repository: google/skia  # Skia仓库地址
           path: skia
-          ref: main  # 指定分支
+          ref: chrome/m128  # 指定分支
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -45,12 +45,12 @@ jobs:
           unzip ninja.zip -d third_party/externals/ninja
           cp third_party/externals/ninja/ninja.exe C:/Windows/System32/
 
-      - name: Install HarfBuzz
-        run: |
-          cd skia
-          curl -L https://github.com/harfbuzz/harfbuzz/releases/download/2.8.1/harfbuzz-2.8.1-win64.zip -o harfbuzz.zip
-          unzip harfbuzz.zip -d third_party/externals/harfbuzz
-          cp third_party/externals/harfbuzz/include/hb.h third_party/externals/harfbuzz/include/
+#      - name: Install HarfBuzz
+#        run: |
+#          cd skia
+#          curl -L https://github.com/harfbuzz/harfbuzz/releases/download/2.8.1/harfbuzz-2.8.1-win64.zip -o harfbuzz.zip
+#          unzip harfbuzz.zip -d third_party/externals/harfbuzz
+#          cp third_party/externals/harfbuzz/include/hb.h third_party/externals/harfbuzz/include/
 
       - name: Build Skia with GN and Ninja
         run: |
