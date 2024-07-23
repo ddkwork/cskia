@@ -1,4 +1,4 @@
-name: Build and Publish Skia Binaries for Multiple Platforms
+name: Build and Publish Windows Skia DLL with GN
 
 on:
   push:
@@ -9,47 +9,48 @@ on:
       - main
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Skia repository
         uses: actions/checkout@v2
+        with:
+          repository: google/skia  # Skia仓库地址
+          path: skia
+          ref: main  # 指定分支
 
-      - name: Set up Python
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      - name: Set up dependencies
+      - name: Build Skia with GN
         run: |
-          choco install git curl -y
+          cd skia
+          python tools/git-sync-deps
+          bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
+          ninja -C out/Release
 
-      - name: Run build script for Windows
-        run: |
-          ./build.sh
-
-      - name: Upload artifact for Windows
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: skia-binaries-windows
-          path: dist/
+          name: skia-dll
+          path: skia/out/Release/skia.dll
 
-  publish:
-    needs: build-windows
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download artifact for Windows
-        uses: actions/download-artifact@v2
+      - name: Publish artifact
+        uses: actions/upload-artifact@v2
         with:
-          name: skia-binaries-windows
-          path: dist/
+          name: skia-dll
+          path: skia/out/Release/skia.dll
+          if-no-files-found: error
 
-      - name: Publish DLL to GitHub Releases
+      - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            dist/**/*.dll
+          files: skia/out/Release/skia.dll
         env:
-          GITHUB_TOKEN: ${{ secrets.tk }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
