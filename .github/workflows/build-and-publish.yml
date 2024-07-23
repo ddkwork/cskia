@@ -27,7 +27,6 @@ jobs:
 
       - name: Run build script for Windows
         run: |
-          chmod +x ./build.sh
           ./build.sh
 
       - name: Upload artifact for Windows
@@ -36,91 +35,8 @@ jobs:
           name: skia-binaries-windows
           path: dist/
 
-  build-macos:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Set up dependencies
-        run: |
-          brew install git curl
-
-      - name: Run build script for macOS
-        run: |
-          chmod +x ./build.sh
-          ./build.sh
-
-      - name: Upload artifact for macOS
-        uses: actions/upload-artifact@v2
-        with:
-          name: skia-binaries-macos
-          path: dist/
-
-  build-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Set up dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git curl
-
-      - name: Run build script for Linux
-        run: |
-          chmod +x ./build.sh
-          ./build.sh
-
-      - name: Upload artifact for Linux
-        uses: actions/upload-artifact@v2
-        with:
-          name: skia-binaries-linux
-          path: dist/
-
-  build-android:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Set up dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git curl
-
-      - name: Run build script for Android
-        run: |
-          chmod +x ./build.sh
-          ./build.sh
-
-      - name: Upload artifact for Android
-        uses: actions/upload-artifact@v2
-        with:
-          name: skia-binaries-android
-          path: dist/
-
   publish:
-    needs: [build-windows, build-macos, build-linux, build-android]
+    needs: build-windows
     runs-on: ubuntu-latest
 
     steps:
@@ -128,30 +44,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: skia-binaries-windows
-          path: dist/windows/
+          path: dist/
 
-      - name: Download artifact for macOS
-        uses: actions/download-artifact@v2
-        with:
-          name: skia-binaries-macos
-          path: dist/macos/
-
-      - name: Download artifact for Linux
-        uses: actions/download-artifact@v2
-        with:
-          name: skia-binaries-linux
-          path: dist/linux/
-
-      - name: Download artifact for Android
-        uses: actions/download-artifact@v2
-        with:
-          name: skia-binaries-android
-          path: dist/android/
-
-      - name: Publish to GitHub Releases
+      - name: Publish DLL to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/**/*
+            dist/**/*.dll
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}

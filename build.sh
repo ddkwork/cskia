@@ -3,8 +3,8 @@ set -eo pipefail
 
 # These two variables should be set in tandem to keep a consistent set of sources.
 # Last set Sat Jun 15 11:00:00 PDT 2024
-DEPOT_TOOLS_COMMIT=1d1f17af898bc5158fb1128952894ac061b06f56
-SKIA_BRANCH=chrome/m127
+DEPOT_TOOLS_COMMIT=d431af39c998f4ba88bf376f500214d82ece766a
+SKIA_BRANCH=main
 
 for arg in "$@"; do
 	case "$arg" in
