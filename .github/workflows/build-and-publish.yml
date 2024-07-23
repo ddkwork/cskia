@@ -18,7 +18,7 @@ jobs:
         with:
           repository: google/skia  # Skia仓库地址
           path: skia
-          ref: chrome/m128  # 指定分支
+          ref: main  # 指定分支
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
@@ -45,17 +45,10 @@ jobs:
           unzip ninja.zip -d third_party/externals/ninja
           cp third_party/externals/ninja/ninja.exe C:/Windows/System32/
 
-#      - name: Install HarfBuzz
-#        run: |
-#          cd skia
-#          curl -L https://github.com/harfbuzz/harfbuzz/releases/download/2.8.1/harfbuzz-2.8.1-win64.zip -o harfbuzz.zip
-#          unzip harfbuzz.zip -d third_party/externals/harfbuzz
-#          cp third_party/externals/harfbuzz/include/hb.h third_party/externals/harfbuzz/include/
-
-      - name: Build Skia with GN and Ninja
+      - name: Build Skia with GN and Ninja (Disable PDF)
         run: |
           cd skia
-          bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false"
+          bin/gn gen out/Release --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_enable_pdf=false"
           ninja -C out/Release
 
       - name: Upload artifact
