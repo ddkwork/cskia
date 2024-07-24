@@ -14,9 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        run: |
-          git clone --recursive --branch main https://github.com/google/skia.git skia
-        shell: pwsh
+        uses: actions/checkout@v2
+        with:
+          repository: google/skia
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v2
