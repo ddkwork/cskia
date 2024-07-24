@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
@@ -13,8 +14,19 @@ import (
 
 //skia/skia/DEPS
 
-//go:generate go build -o build_skia
 func main() {
+	index := 1
+	for _, s := range stream.NewBuffer("skia/skia/DEPS").ToLines() {
+		if !strings.Contains(s, "#") && strings.Contains(s, "https://") && strings.Contains(s, "@") {
+			println(index)
+			index++
+			println(s)
+		}
+	}
+}
+
+//go:generate go build -o build_skia
+func main2() {
 	workDir := "skia"
 	mylog.CheckIgnore(os.MkdirAll(workDir, 0755))
 	depotToolsDir := filepath.Join(workDir, "depot_tools")

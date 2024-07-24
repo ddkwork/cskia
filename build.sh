@@ -197,7 +197,7 @@ fi
 export PATH="${PWD}/depot_tools:${PATH}"
 
 if [ ! -e skia ]; then
-	git clone https://github.com/google/skia.git
+	git clone https://git.homegu.com/google/skia.git
 	cd skia
 	git checkout "${SKIA_BRANCH}"
 	python3 tools/git-sync-deps
