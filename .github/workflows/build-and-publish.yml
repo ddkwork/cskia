@@ -24,36 +24,37 @@ jobs:
       - name: Install depot_tools
         run: |
           cd skia
-          if not exist depot_tools (
+          if (-not (Test-Path depot_tools)) {
             git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-          )
-          set PATH=%CD%\depot_tools;%PATH%
+          }
+          $env:PATH = "$pwd\depot_tools;$env:PATH"
 
       - name: Sync Skia dependencies
         run: |
           cd skia
-          if not exist skia (
+          if (-not (Test-Path skia)) {
             git clone https://github.com/google/skia.git
             cd skia
             git checkout main
             python3 tools/git-sync-deps
             python3 bin/fetch-ninja
             cd ..
-          )
+          }
 
       - name: Apply changes
         run: |
           cd skia/skia
-          rmdir /s /q src\c
-          rmdir /s /q include\c
-          copy ..\..\capi\sk_capi.h include\
-          copy ..\..\capi\sk_capi.cpp src\
-          findstr /v /c:"src\sk_capi.cpp" gn\core.gni > gn\core.gni.tmp
-          (echo skia_core_sources = [ & type gn\core.gni.tmp & echo   "$_src/sk_capi.cpp",) > gn\core.gni.new
-          del gn\core.gni.tmp
-          move gn\core.gni.new gn\core.gni
-          (echo #include "include/core/SkData.h" & type src\pdf\SkPDFSubsetFont.h) > src\pdf\SkPDFSubsetFont.h.new
-          move src\pdf\SkPDFSubsetFont.h.new src\pdf\SkPDFSubsetFont.h
+          Remove-Item -Recurse -Force src\c
+          Remove-Item -Recurse -Force include\c
+          Copy-Item ..\..\capi\sk_capi.h include\
+          Copy-Item ..\..\capi\sk_capi.cpp src\
+          Get-Content gn\core.gni | Select-String -NotMatch -Pattern "src\sk_capi.cpp" | ForEach-Object { "$_`n  ""$_src/sk_capi.cpp""," } | Set-Content gn\core.gni.new
+          Move-Item gn\core.gni.new gn\core.gni
+          $header = "#include `"include/core/SkData.h`""
+          $content = Get-Content src\pdf\SkPDFSubsetFont.h
+          $content[0] = $header
+          $content | Set-Content src\pdf\SkPDFSubsetFont.h.new
+          Move-Item src\pdf\SkPDFSubsetFont.h.new src\pdf\SkPDFSubsetFont.h
 
       - name: Build Skia DLL with GN and Ninja
         run: |
@@ -104,33 +105,33 @@ jobs:
             skia_use_fontconfig=false
             skia_use_freetype=false
             skia_use_x11=false
-            clang_win=\"C:\\Program Files\\LLVM\"
+            clang_win=`"C:\\Program Files\\LLVM`"
             extra_cflags=[
-              \"-DSKIA_C_DLL\",
-              \"-UHAVE_NEWLOCALE\",
-              \"-UHAVE_XLOCALE_H\",
-              \"-UHAVE_UNISTD_H\",
-              \"-UHAVE_SYS_MMAN_H\",
-              \"-UHAVE_MMAP\",
-              \"-UHAVE_PTHREAD\"
+              `"-DSKIA_C_DLL`",
+              `"-UHAVE_NEWLOCALE`",
+              `"-UHAVE_XLOCALE_H`",
+              `"-UHAVE_UNISTD_H`",
+              `"-UHAVE_SYS_MMAN_H`",
+              `"-UHAVE_MMAP`",
+              `"-UHAVE_PTHREAD`"
             ]
             extra_ldflags=[
-              \"/defaultlib:opengl32\",
-              \"/defaultlib:gdi32\"
+              `"/defaultlib:opengl32`",
+              `"/defaultlib:gdi32`"
             ]"
           ninja -C out/Release skia
 
       - name: Check build directory
         run: |
-          dir skia\skia\out\Release
+          Get-ChildItem skia\skia\out\Release
 
       - name: Copy artifacts
         run: |
-          mkdir dist\include
-          del /f dist\include\*.h
-          copy skia\skia\include\sk_capi.h dist\include\
-          mkdir dist\lib\windows
-          copy skia\skia\out\Release\skia.dll dist\lib\windows\
+          New-Item -ItemType Directory -Path dist\include -Force
+          Remove-Item -Force dist\include\*.h
+          Copy-Item skia\skia\include\sk_capi.h dist\include\
+          New-Item -ItemType Directory -Path dist\lib\windows -Force
+          Copy-Item skia\skia\out\Release\skia.dll dist\lib\windows\
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -150,6 +151,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist\lib\windows\skia.dll
-          tag_name: v1.0.2
+          tag_name: v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
