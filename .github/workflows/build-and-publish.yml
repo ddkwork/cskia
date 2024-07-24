@@ -24,9 +24,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install zstd
+      - name: Download and install zstd
         run: |
-          choco install zstd
+          Invoke-WebRequest -Uri "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-v1.5.5-win64.zip" -OutFile zstd.zip
+          Expand-Archive -Path zstd.zip -DestinationPath zstd
+          $env:Path += ";${{ github.workspace }}\zstd\zstd-v1.5.5-win64"
         shell: pwsh
 
       - name: Sync dependencies
