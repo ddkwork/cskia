@@ -190,7 +190,7 @@ mkdir -p skia
 cd skia
 
 if [ ! -e depot_tools ]; then
-	git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+	git clone https://git.homegu.com/ddkwork/depot_tools.git
 	cd depot_tools
 	git reset --hard "${DEPOT_TOOLS_COMMIT}"
 	cd ..

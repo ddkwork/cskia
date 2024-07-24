@@ -11,6 +11,8 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
+//skia/skia/DEPS
+
 //go:generate go build -o build_skia
 func main() {
 	workDir := "skia"

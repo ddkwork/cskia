@@ -7,6 +7,9 @@ tar --zstd -cf externals.tar.zst /tmp/skia/third_party/externals -v
 tar --zstd -cf externals.tar.zst --exclude='*/.git' --exclude='*/node_modules' /tmp/skia/third_party/externals -v
 du -h externals.tar.zst
 
+tar --use-compress-program=unzstd -xf externals.tar.zst -v
+         git commit -m "xxoo"
+          git push origin main
 
 yml action windows实现以下过程
 clone https://github.com/google/skia/ main分支
@@ -14,7 +17,6 @@ cd  skia
 python tools/git-sync-deps
 返回到上一级
 然后把skia目录压缩成tar.zst并提交
-
 
 
 
