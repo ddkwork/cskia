@@ -150,33 +150,34 @@ Linux*)
       ] \
     "
 	;;
-MINGW*)
+ MSYS_NT*)
 	OS_TYPE=windows
 	LIB_NAME=skia.dll
 	UNISON_LIB_NAME=skia_windows.dll
-	PLATFORM_ARGS=" \
-      is_component_build=true \
-      skia_enable_fontmgr_win=true \
-      skia_use_fonthost_mac=false \
-      skia_enable_fontmgr_fontconfig=false \
-      skia_use_fontconfig=false \
-      skia_use_freetype=false \
-      skia_use_x11=false \
-      clang_win=\"C:\\Program Files\\LLVM\" \
-      extra_cflags=[ \
-        \"-DSKIA_C_DLL\", \
-        \"-UHAVE_NEWLOCALE\", \
-        \"-UHAVE_XLOCALE_H\", \
-        \"-UHAVE_UNISTD_H\", \
-        \"-UHAVE_SYS_MMAN_H\", \
-        \"-UHAVE_MMAP\", \
-        \"-UHAVE_PTHREAD\" \
-      ] \
-      extra_ldflags=[ \
-        \"/defaultlib:opengl32\", \
-        \"/defaultlib:gdi32\" \
-      ] \
-    "
+PLATFORM_ARGS=" \
+    is_component_build=true \
+    skia_enable_fontmgr_win=true \
+    skia_use_fonthost_mac=false \
+    skia_enable_fontmgr_fontconfig=false \
+    skia_use_fontconfig=false \
+    skia_use_freetype=false \
+    skia_use_x11=false \
+    clang_win=\"C:/Program Files/LLVM\" \
+    extra_cflags=[ \
+      \"-DSKIA_C_DLL\", \
+      \"-UHAVE_NEWLOCALE\", \
+      \"-UHAVE_XLOCALE_H\", \
+      \"-UHAVE_UNISTD_H\", \
+      \"-UHAVE_SYS_MMAN_H\", \
+      \"-UHAVE_MMAP\", \
+      \"-UHAVE_PTHREAD\" \
+    ] \
+    extra_ldflags=[ \
+      \"/defaultlib:opengl32\", \
+      \"/defaultlib:gdi32\" \
+    ] \
+"
+
 	;;
 *)
 	echo "Unsupported OS"

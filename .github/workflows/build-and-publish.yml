@@ -1,4 +1,4 @@
-name: Build and Publish Windows Skia DLL with GN and Ninja
+name: Build and Compress Skia
 
 on:
   push:
@@ -13,144 +13,46 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: google/skia
+          ref: main
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      - name: Install depot_tools
+      - name: Install zstd
+        run: |
+          choco install zstd
+        shell: pwsh
+
+      - name: Sync dependencies
         run: |
           cd skia
-          if (-not (Test-Path depot_tools)) {
-            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-          }
-          $env:PATH = "$pwd\depot_tools;$env:PATH"
+          python tools/git-sync-deps
+        shell: pwsh
 
-      - name: Sync Skia dependencies
+      - name: Compress skia directory
         run: |
-          cd skia
-          if (-not (Test-Path skia)) {
-            git clone https://github.com/google/skia.git
-            cd skia
-            git checkout main
-            python3 tools/git-sync-deps
-            python3 bin/fetch-ninja
-            cd ..
-          }
+          Compress-Archive -Path skia -DestinationPath skia.zip
+          zstd -19 skia.zip -o skia.tar.zst
+        shell: pwsh
 
-      - name: Apply changes
+      - name: Commit and push compressed file
         run: |
-          cd skia/skia
-          Remove-Item -Recurse -Force src\c
-          Remove-Item -Recurse -Force include\c
-          Copy-Item ..\..\capi\sk_capi.h include\
-          Copy-Item ..\..\capi\sk_capi.cpp src\
-          Get-Content gn\core.gni | Select-String -NotMatch -Pattern "src\sk_capi.cpp" | ForEach-Object { "$_`n  ""$_src/sk_capi.cpp""," } | Set-Content gn\core.gni.new
-          Move-Item gn\core.gni.new gn\core.gni
-          $header = "#include `"include/core/SkData.h`""
-          $content = Get-Content src\pdf\SkPDFSubsetFont.h
-          $content[0] = $header
-          $content | Set-Content src\pdf\SkPDFSubsetFont.h.new
-          Move-Item src\pdf\SkPDFSubsetFont.h.new src\pdf\SkPDFSubsetFont.h
-
-      - name: Build Skia DLL with GN and Ninja
-        run: |
-          cd skia/skia
-          bin/gn gen out/Release --args="is_debug=false
-            is_official_build=true
-            skia_enable_discrete_gpu=true
-            skia_enable_fontmgr_android=false
-            skia_enable_fontmgr_empty=false
-            skia_enable_fontmgr_fuchsia=false
-            skia_enable_fontmgr_win_gdi=false
-            skia_enable_gpu=true
-            skia_enable_pdf=false
-            skia_enable_skottie=false
-            skia_enable_skshaper=true
-            skia_enable_skshaper_tests=false
-            skia_enable_spirv_validation=false
-            skia_enable_tools=false
-            skia_enable_vulkan_debug_layers=false
-            skia_use_angle=false
-            skia_use_dawn=false
-            skia_use_dng_sdk=false
-            skia_use_egl=false
-            skia_use_expat=false
-            skia_use_ffmpeg=false
-            skia_use_fixed_gamma_text=false
-            skia_use_fontconfig=false
-            skia_use_gl=true
-            skia_use_harfbuzz=false
-            skia_use_icu=false
-            skia_use_libheif=false
-            skia_use_libjxl_decode=false
-            skia_use_lua=false
-            skia_use_metal=false
-            skia_use_piex=false
-            skia_use_system_libjpeg_turbo=false
-            skia_use_system_libpng=false
-            skia_use_system_libwebp=false
-            skia_use_system_zlib=false
-            skia_use_vulkan=false
-            skia_use_wuffs=true
-            skia_use_xps=false
-            skia_use_zlib=true
-            is_component_build=true
-            skia_enable_fontmgr_win=true
-            skia_use_fonthost_mac=false
-            skia_enable_fontmgr_fontconfig=false
-            skia_use_fontconfig=false
-            skia_use_freetype=false
-            skia_use_x11=false
-            clang_win=`"C:\\Program Files\\LLVM`"
-            extra_cflags=[
-              `"-DSKIA_C_DLL`",
-              `"-UHAVE_NEWLOCALE`",
-              `"-UHAVE_XLOCALE_H`",
-              `"-UHAVE_UNISTD_H`",
-              `"-UHAVE_SYS_MMAN_H`",
-              `"-UHAVE_MMAP`",
-              `"-UHAVE_PTHREAD`"
-            ]
-            extra_ldflags=[
-              `"/defaultlib:opengl32`",
-              `"/defaultlib:gdi32`"
-            ]"
-          ninja -C out/Release skia
-
-      - name: Check build directory
-        run: |
-          Get-ChildItem skia\skia\out\Release
-
-      - name: Copy artifacts
-        run: |
-          New-Item -ItemType Directory -Path dist\include -Force
-          Remove-Item -Force dist\include\*.h
-          Copy-Item skia\skia\include\sk_capi.h dist\include\
-          New-Item -ItemType Directory -Path dist\lib\windows -Force
-          Copy-Item skia\skia\out\Release\skia.dll dist\lib\windows\
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: skia-dll
-          path: dist\lib\windows\skia.dll
-          if-no-files-found: error
-
-      - name: Publish artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: skia-dll
-          path: dist\lib\windows\skia.dll
-          if-no-files-found: error
-
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v1
-        with:
-          files: dist\lib\windows\skia.dll
-          tag_name: v1.0.0
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add skia.tar.zst
+          git commit -m "Add compressed skia artifact"
+          git push
+        shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
+
+      - name: Remove cloned repository
+        run: |
+          Remove-Item -Recurse -Force skia
+        shell: pwsh
