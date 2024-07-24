@@ -61,7 +61,8 @@ if (target_os == "win") {`, 1)
 
 	//python tools/git-sync-deps
 	//bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
-
+	//gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false"
+	//ninja -C out/Shared
 }
 
 //go:generate go build -o build_skia

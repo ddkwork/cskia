@@ -1,62 +1,15 @@
 git clone -b chrome/m128 https://github.com/google/skia
 git clone https://github.com/google/skia
-cd skia
-
-python tools/git-sync-deps
-bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
-
-tar --zstd -cf externals.tar.zst /tmp/skia/third_party/externals -v
-tar --zstd -cf externals.tar.zst --exclude='*/.git' --exclude='*/node_modules' /tmp/skia/third_party/externals -v
-du -h externals.tar.zst
-
-tar --use-compress-program=unzstd -xf externals.tar.zst -v
-         git commit -m "xxoo"
-          git push origin main
-
-yml action windows实现以下过程
-clone https://github.com/google/skia/ main分支
-cd  skia
-python tools/git-sync-deps
-
-
-gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false"
 
 https://www.bilibili.com/video/BV1Kj421X75x/?spm_id_from=333.337.search-card.all.click
 skia在windows下编译
 
-
 mkdir build
 cd build
-
 cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -DSKIA_BUILD_SHARED=ON
 cmake --build . --config Release
-
-find ./ -name "CMakeLists.txt"
-
-
-set GYP_MSVS_OVERRIDE_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise
-gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false"
-
-sudo apt-get update
-sudo apt-get install mingw-w64
-
-export CC=/usr/bin/x86_64-w64-mingw32-gcc
-export CXX=/usr/bin/x86_64-w64-mingw32-g++
-export AR=/usr/bin/x86_64-w64-mingw32-ar
-export STRIP=/usr/bin/x86_64-w64-mingw32-strip
-export PKG_CONFIG_PATH=/usr/x86_64-w64-mingw32/lib/pkgconfig
 
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 export PATH=$PATH:/path/to/depot_tools
 
-python tools/git-sync-deps
-bin/gn gen out/Shared --args='is_debug=false is_official_build=true target_cpu="x86_64" target_os="win" skia_use_system_expat=false skia_use_system_freetype2=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false'
 
-ninja -C out/Shared
-
-sudo apt-get update
-sudo apt-get install ninja-build
-
-gl头文件找不到
-sudo apt-get install libgl1-mesa-dev
-sudo apt-get install libfreetype6-dev
