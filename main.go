@@ -59,6 +59,9 @@ if (target_os == "win") {`, 1)
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = 8`, 1)
 	stream.WriteTruncate("skia\\skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
 
+	//python tools/git-sync-deps
+	//bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
+
 }
 
 //go:generate go build -o build_skia

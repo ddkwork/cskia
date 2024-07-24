@@ -1,7 +1,9 @@
 git clone -b chrome/m128 https://github.com/google/skia
 git clone https://github.com/google/skia
 cd skia
+
 python tools/git-sync-deps
+bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
 
 tar --zstd -cf externals.tar.zst /tmp/skia/third_party/externals -v
 tar --zstd -cf externals.tar.zst --exclude='*/.git' --exclude='*/node_modules' /tmp/skia/third_party/externals -v
@@ -15,13 +17,6 @@ yml action windows实现以下过程
 clone https://github.com/google/skia/ main分支
 cd  skia
 python tools/git-sync-deps
-返回到上一级
-然后把skia目录压缩成tar.zst并提交
-
-
-
-
-
 
 
 gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false"
@@ -29,36 +24,9 @@ gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_
 https://www.bilibili.com/video/BV1Kj421X75x/?spm_id_from=333.337.search-card.all.click
 skia在windows下编译
 
-D:\fork\skia\cskia\skia\skia\gn\BUILDCONFIG.gn
-if (target_os == "win") {
-
-}
-win_sdk = "C:/Program Files (x86)/Windows Kits/10"
-win_sdk_version = "10.0.26100.0"
-
-win_vc = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC"
-win_toolchain_version = "14.40.33807"
-
-clang_win = "C:\Program Files\LLVM"
-clang_win_version = "18.1.7"
-
-D:\fork\skia\cskia\skia\skia\gn\toolchain\BUILD.gn
-#dlsymutil_pool_depth = 8
-
-
-
-bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
-
-
-
-
-
-
-
 
 mkdir build
 cd build
-
 
 cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -DSKIA_BUILD_SHARED=ON
 cmake --build . --config Release
@@ -72,7 +40,6 @@ gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_
 sudo apt-get update
 sudo apt-get install mingw-w64
 
-
 export CC=/usr/bin/x86_64-w64-mingw32-gcc
 export CXX=/usr/bin/x86_64-w64-mingw32-g++
 export AR=/usr/bin/x86_64-w64-mingw32-ar
@@ -84,7 +51,6 @@ export PATH=$PATH:/path/to/depot_tools
 
 python tools/git-sync-deps
 bin/gn gen out/Shared --args='is_debug=false is_official_build=true target_cpu="x86_64" target_os="win" skia_use_system_expat=false skia_use_system_freetype2=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false'
-
 
 ninja -C out/Shared
 
