@@ -87,7 +87,27 @@ jobs:
             skia_use_wuffs=true
             skia_use_xps=false
             skia_use_zlib=true
-            is_component_build=true"
+            is_component_build=true
+            skia_enable_fontmgr_win=true
+            skia_use_fonthost_mac=false
+            skia_enable_fontmgr_fontconfig=false
+            skia_use_fontconfig=false
+            skia_use_freetype=false
+            skia_use_x11=false
+            clang_win=\"C:\\Program Files\\LLVM\"
+            extra_cflags=[
+              \"-DSKIA_C_DLL\",
+              \"-UHAVE_NEWLOCALE\",
+              \"-UHAVE_XLOCALE_H\",
+              \"-UHAVE_UNISTD_H\",
+              \"-UHAVE_SYS_MMAN_H\",
+              \"-UHAVE_MMAP\",
+              \"-UHAVE_PTHREAD\"
+            ]
+            extra_ldflags=[
+              \"/defaultlib:opengl32\",
+              \"/defaultlib:gdi32\"
+            ]"
           ninja -C out/Release skia
 
       - name: Check build directory
@@ -108,11 +128,10 @@ jobs:
           path: skia/out/Release/skia.dll
           if-no-files-found: error
 
-
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           files: skia/out/Release/skia.dll
-          tag_name: v1.0.0
+          tag_name: v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
