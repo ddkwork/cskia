@@ -15,19 +15,31 @@ import (
 //skia/skia/DEPS
 
 func main() {
-	for _, s := range stream.NewBuffer("skia/skia/DEPS").ToLines() {
-		if !strings.Contains(s, "#") && strings.Contains(s, "https://") && strings.Contains(s, "@") {
-			_, after, found := strings.Cut(s, ":")
+	buffer := stream.NewBuffer("skia/skia/DEPS")
+	for _, s := range stream.ToLines("skia/skia/DEPS") {
+		s = strings.TrimSpace(s)
+		if strings.HasPrefix(s, "#") {
+			continue
+		}
+		if strings.Contains(s, "https://") && strings.Contains(s, "@") {
+			before, after, found := strings.Cut(s, ":")
 			if found {
+				if strings.HasPrefix(strings.TrimSpace(before), "#") {
+					continue
+				}
 				after = strings.TrimSpace(after)
 				after = strings.TrimPrefix(after, `"`)
 				url := strings.Split(after, "@")
 				src := url[0]
-				println(src)
-			}
 
+				index := strings.LastIndex(src, "/")
+				src = src[:index+1]
+				println(src)
+				buffer.Replace(src, "https://git.homegu.com/ddkwork/", 1)
+			}
 		}
 	}
+	stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
 }
 
 //go:generate go build -o build_skia
