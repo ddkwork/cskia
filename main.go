@@ -40,6 +40,11 @@ func main() {
 		}
 	}
 	stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
+
+	//skia\skia\gn\BUILDCONFIG.gn
+
+	//skia\skia\gn\toolchain\BUILD.gn
+
 }
 
 //go:generate go build -o build_skia
