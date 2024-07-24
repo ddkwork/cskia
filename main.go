@@ -39,7 +39,6 @@ func main() {
 	}
 	stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
 
-	//skia\skia\gn\BUILDCONFIG.gn
 	buffer = stream.NewBuffer("skia\\skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
 		buffer.Replace(`if (target_os == "win") {`, `
@@ -56,7 +55,6 @@ if (target_os == "win") {`, 1)
 		stream.WriteTruncate("skia\\skia\\gn\\BUILDCONFIG.gn", buffer.Bytes())
 	}
 
-	//skia\skia\gn\toolchain\BUILD.gn
 	buffer = stream.NewBuffer("skia\\skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = 8`, 1)
 	stream.WriteTruncate("skia\\skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
