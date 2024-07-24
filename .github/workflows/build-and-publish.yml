@@ -14,10 +14,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          repository: google/skia
-          ref: main
+        run: |
+          git clone --recursive --branch main https://github.com/google/skia.git skia
+        shell: pwsh
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -37,10 +36,28 @@ jobs:
           python tools/git-sync-deps
         shell: pwsh
 
+      - name: Generate configuration
+        run: |
+          cd skia
+          bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
+        shell: pwsh
+
+      - name: Remove existing zst file
+        run: |
+          if (Test-Path skia.tar.zst) {
+            Remove-Item skia.tar.zst
+          }
+        shell: pwsh
+
       - name: Compress skia directory
         run: |
           Compress-Archive -Path skia -DestinationPath skia.zip
           zstd -19 skia.zip -o skia.tar.zst
+        shell: pwsh
+
+      - name: Remove cloned repository
+        run: |
+          Remove-Item -Recurse -Force skia
         shell: pwsh
 
       - name: Commit and push compressed file
@@ -53,8 +70,3 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
-
-      - name: Remove cloned repository
-        run: |
-          Remove-Item -Recurse -Force skia
-        shell: pwsh
