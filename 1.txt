@@ -1,4 +1,11 @@
+git clone -b chrome/m128 https://github.com/google/skia
+git clone https://github.com/google/skia
+cd skia
 python tools/git-sync-deps
+
+tar --zstd -cf externals.tar.zst /tmp/skia/third_party/externals -v
+tar --zstd -cf externals.tar.zst --exclude='*/.git' --exclude='*/node_modules' /tmp/skia/third_party/externals -v
+du -h externals.tar.zst
 
 
 yml action windows实现以下过程
