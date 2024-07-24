@@ -15,12 +15,17 @@ import (
 //skia/skia/DEPS
 
 func main() {
-	index := 1
 	for _, s := range stream.NewBuffer("skia/skia/DEPS").ToLines() {
 		if !strings.Contains(s, "#") && strings.Contains(s, "https://") && strings.Contains(s, "@") {
-			println(index)
-			index++
-			println(s)
+			_, after, found := strings.Cut(s, ":")
+			if found {
+				after = strings.TrimSpace(after)
+				after = strings.TrimPrefix(after, `"`)
+				url := strings.Split(after, "@")
+				src := url[0]
+				println(src)
+			}
+
 		}
 	}
 }
