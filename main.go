@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -59,28 +58,28 @@ func main() {
 }
 
 func copyFile(src, dst string) {
-	input := mylog.Check2(ioutil.ReadFile(src))
+	input := mylog.Check2(os.ReadFile(src))
 	mylog.Check(os.WriteFile(dst, input, 0644))
 }
 
 func modifyCoreGni() {
 	filePath := "gn/core.gni"
-	input := mylog.Check2(ioutil.ReadFile(filePath))
+	input := mylog.Check2(os.ReadFile(filePath))
 	lines := string(input)
 	re := regexp.MustCompile(`src/sk_capi.cpp`)
 	lines = re.ReplaceAllString(lines, "")
 	re = regexp.MustCompile(`skia_core_sources = \[`)
 	lines = re.ReplaceAllString(lines, `skia_core_sources = [\n  "$_src/sk_capi.cpp",`)
-	mylog.Check(ioutil.WriteFile("gn/core.gni.new", []byte(lines), 0644))
+	mylog.Check(os.WriteFile("gn/core.gni.new", []byte(lines), 0644))
 	mylog.Check(os.Rename("gn/core.gni.new", "gn/core.gni"))
 }
 
 func modifySkPDFSubsetFontH() {
 	filePath := "src/pdf/SkPDFSubsetFont.h"
-	input := mylog.Check2(ioutil.ReadFile(filePath))
+	input := mylog.Check2(os.ReadFile(filePath))
 	lines := string(input)
 	re := regexp.MustCompile(`^class SkData;$`)
 	lines = re.ReplaceAllString(lines, `#include "include/core/SkData.h"`)
-	mylog.Check(ioutil.WriteFile("src/pdf/SkPDFSubsetFont.h.new", []byte(lines), 0644))
+	mylog.Check(os.WriteFile("src/pdf/SkPDFSubsetFont.h.new", []byte(lines), 0644))
 	mylog.Check(os.Rename("src/pdf/SkPDFSubsetFont.h.new", "src/pdf/SkPDFSubsetFont.h"))
 }
