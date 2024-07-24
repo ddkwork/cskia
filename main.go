@@ -12,8 +12,6 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-//skia/skia/DEPS
-
 func main() {
 	buffer := stream.NewBuffer("skia/skia/DEPS")
 	for _, s := range stream.ToLines("skia/skia/DEPS") {
