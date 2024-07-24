@@ -13,13 +13,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Skia repository
-        uses: actions/checkout@v2
-        with:
-          repository: google/skia  # Skia仓库地址
-          path: skia
-          ref: main  # 指定分支
-
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
@@ -28,26 +21,43 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install GN
+      - name: Install depot_tools
         run: |
           cd skia
-          python tools/git-sync-deps
-          mkdir -p third_party/externals/gn
-          curl -L https://chrome-infra-packages.appspot.com/dl/gn/gn/windows-amd64/+/latest -o gn.zip
-          unzip gn.zip -d third_party/externals/gn
-          cp third_party/externals/gn/gn.exe C:/Windows/System32/
+          if not exist depot_tools (
+            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          )
+          set PATH=%CD%\depot_tools;%PATH%
 
-      - name: Install Ninja
+      - name: Sync Skia dependencies
         run: |
           cd skia
-          mkdir -p third_party/externals/ninja
-          curl -L https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -o ninja.zip
-          unzip ninja.zip -d third_party/externals/ninja
-          cp third_party/externals/ninja/ninja.exe C:/Windows/System32/
+          if not exist skia (
+            git clone https://github.com/google/skia.git
+            cd skia
+            git checkout main
+            python3 tools/git-sync-deps
+            python3 bin/fetch-ninja
+            cd ..
+          )
+
+      - name: Apply changes
+        run: |
+          cd skia/skia
+          rmdir /s /q src\c
+          rmdir /s /q include\c
+          copy ..\..\capi\sk_capi.h include\
+          copy ..\..\capi\sk_capi.cpp src\
+          findstr /v /c:"src\sk_capi.cpp" gn\core.gni > gn\core.gni.tmp
+          (echo skia_core_sources = [ & type gn\core.gni.tmp & echo   "$_src/sk_capi.cpp",) > gn\core.gni.new
+          del gn\core.gni.tmp
+          move gn\core.gni.new gn\core.gni
+          (echo #include "include/core/SkData.h" & type src\pdf\SkPDFSubsetFont.h) > src\pdf\SkPDFSubsetFont.h.new
+          move src\pdf\SkPDFSubsetFont.h.new src\pdf\SkPDFSubsetFont.h
 
       - name: Build Skia DLL with GN and Ninja
         run: |
-          cd skia
+          cd skia/skia
           bin/gn gen out/Release --args="is_debug=false
             is_official_build=true
             skia_enable_discrete_gpu=true
@@ -112,26 +122,34 @@ jobs:
 
       - name: Check build directory
         run: |
-          ls skia/out/Release
+          dir skia\skia\out\Release
+
+      - name: Copy artifacts
+        run: |
+          mkdir dist\include
+          del /f dist\include\*.h
+          copy skia\skia\include\sk_capi.h dist\include\
+          mkdir dist\lib\windows
+          copy skia\skia\out\Release\skia.dll dist\lib\windows\
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: skia-dll
-          path: skia/out/Release/skia.dll
+          path: dist\lib\windows\skia.dll
           if-no-files-found: error
 
       - name: Publish artifact
         uses: actions/upload-artifact@v2
         with:
           name: skia-dll
-          path: skia/out/Release/skia.dll
+          path: dist\lib\windows\skia.dll
           if-no-files-found: error
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: skia/out/Release/skia.dll
-          tag_name: v1.0.1
+          files: dist\lib\windows\skia.dll
+          tag_name: v1.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
