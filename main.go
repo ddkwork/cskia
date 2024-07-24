@@ -1,0 +1,86 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+
+	"github.com/ddkwork/golibrary/mylog"
+	"github.com/ddkwork/golibrary/stream"
+)
+
+//go:generate go build -o build_skia
+func main() {
+	workDir := "skia"
+	mylog.CheckIgnore(os.MkdirAll(workDir, 0755))
+	depotToolsDir := filepath.Join(workDir, "depot_tools")
+	if !stream.IsDirEx(depotToolsDir) {
+		mylog.Check(exec.Command("git", "clone", "--progress", "https://chromium.googlesource.com/chromium/tools/depot_tools.git", depotToolsDir).Run())
+	}
+	mylog.Check(os.Setenv("PATH", fmt.Sprintf("%s;%s", depotToolsDir, os.Getenv("PATH"))))
+
+	// 同步 Skia 依赖
+	skiaDir := filepath.Join(workDir, "skia")
+	if !stream.IsDirEx(skiaDir) {
+		mylog.Check(exec.Command("git", "clone", "--progress", "https://github.com/google/skia.git", skiaDir).Run())
+	}
+	mylog.Check(os.Chdir(skiaDir))
+	mylog.Check(exec.Command("python3", "tools/git-sync-deps").Run())
+	mylog.Check(exec.Command("python3", "bin/fetch-ninja").Run())
+	mylog.Check(os.RemoveAll("src/c"))
+	mylog.Check(os.RemoveAll("include/c"))
+	mylog.Check(os.Chdir(skiaDir))
+	stream.CopyFile("../../capi/sk_capi.h", "include/sk_capi.h")
+	stream.CopyFile("../../capi/sk_capi.cpp", "src/sk_capi.cpp")
+
+	modifyCoreGni()
+	modifySkPDFSubsetFontH()
+
+	// 构建 Skia DLL
+	buildDir := filepath.Join(skiaDir, "out", "Release")
+	mylog.Check(exec.Command("bin/gn", "gen", buildDir, "--args=is_debug=false is_official_build=true skia_enable_gpu=true is_component_build=true").Run())
+	mylog.Check(exec.Command("ninja", "-C", buildDir, "skia").Run())
+
+	// 检查构建目录
+	files := mylog.Check2(os.ReadDir(buildDir))
+
+	for _, file := range files {
+		fmt.Println("Build file:", file.Name())
+	}
+
+	distDir := "dist"
+	mylog.Check(os.MkdirAll(distDir, 0755))
+	mylog.Check(exec.Command("cp", filepath.Join(buildDir, "skia.dll"), filepath.Join(distDir, "skia.dll")).Run())
+
+	mylog.Success("", "DLL published successfully!")
+}
+
+func copyFile(src, dst string) {
+	input := mylog.Check2(ioutil.ReadFile(src))
+	mylog.Check(os.WriteFile(dst, input, 0644))
+}
+
+func modifyCoreGni() {
+	filePath := "gn/core.gni"
+	input := mylog.Check2(ioutil.ReadFile(filePath))
+	lines := string(input)
+	re := regexp.MustCompile(`src/sk_capi.cpp`)
+	lines = re.ReplaceAllString(lines, "")
+	re = regexp.MustCompile(`skia_core_sources = \[`)
+	lines = re.ReplaceAllString(lines, `skia_core_sources = [\n  "$_src/sk_capi.cpp",`)
+	mylog.Check(ioutil.WriteFile("gn/core.gni.new", []byte(lines), 0644))
+	mylog.Check(os.Rename("gn/core.gni.new", "gn/core.gni"))
+}
+
+func modifySkPDFSubsetFontH() {
+	filePath := "src/pdf/SkPDFSubsetFont.h"
+	input := mylog.Check2(ioutil.ReadFile(filePath))
+	lines := string(input)
+	re := regexp.MustCompile(`^class SkData;$`)
+	lines = re.ReplaceAllString(lines, `#include "include/core/SkData.h"`)
+	mylog.Check(ioutil.WriteFile("src/pdf/SkPDFSubsetFont.h.new", []byte(lines), 0644))
+	mylog.Check(os.Rename("src/pdf/SkPDFSubsetFont.h.new", "src/pdf/SkPDFSubsetFont.h"))
+}
