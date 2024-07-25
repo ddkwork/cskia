@@ -1,4 +1,4 @@
-name: Build and Commit Skia DLL
+name: Build and Push skia.dll
 
 on:
   push:
@@ -9,26 +9,20 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-push:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up MSYS2
-        uses: msys2/setup-msys2@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          update: true
+          go-version: 1.22.5
 
-      - name: Install dependencies
-        run: |
-          msys2 -c "pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain git"
-
-      - name: Run build script
-        run: |
-          msys2 -c "python3 skia/skia/tools/git-sync-deps"
-          msys2 -c "./build.sh"
+      - name: Run Go application
+        run: go run .
 
       - name: Commit and push skia.dll
         run: |

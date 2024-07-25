@@ -137,7 +137,7 @@ MINGW*)
 esac
 
 # Setup the Skia tree, pulling sources, if needed.
-mkdir -p skia
+mkdir -p
 cd skia
 
 if [ ! -e depot_tools ]; then

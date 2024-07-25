@@ -1,18 +1,58 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/ddkwork/golibrary/mylog"
 	"github.com/ddkwork/golibrary/stream"
 )
 
+func AddToPath(newPath string) {
+	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";skia/depot_tools"))
+}
+
 func main() {
+	mylog.Check(stream.CreatDirectory("skia"))
+	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
+
+	AddToPath("skia/depot_tools")
+
+	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
+	mylog.Check(os.Chdir("skia"))
+	stream.RunCommand("python3 tools/git-sync-deps")
+	stream.RunCommand("python3 bin/fetch-ninja")
+	mylog.Check(os.Chdir(".."))
+
+	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
+	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
+
+	gni := stream.NewBuffer("skia/gn/core.gni")
+	gni.Replace(`skia_core_sources = [`, `skia_core_sources = [
+  "$_src/sk_capi.cpp",`, 1)
+	stream.WriteTruncate("skia/gn/core.gni", gni.Bytes())
+
+	font := stream.NewBuffer("skia/src/pdf/SkPDFSubsetFont.h")
+	font.Replace(`#include "include/docs/SkPDFDocument.h"`, `#include "include/core/SkData.h"
+#include "include/docs/SkPDFDocument.h"`, 1)
+	stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
+
+	mylog.Check(os.Chdir("skia"))
+	genCmd := "${" + COMMON_ARGS + "} ${" + PLATFORM_ARGS + "}"
+
+	buildDir := filepath.Join("skia", "build")
+	mylog.Check(stream.CreatDirectory(buildDir))
+	stream.RunCommand("python3 tools/git-sync-deps")
+	stream.RunCommand("python3 bin/fetch-gn")
+	stream.RunCommandArgs("bin/gen", strconv.Quote(buildDir), "--args=", strconv.Quote(genCmd))
+	mylog.Check(stream.CreatDirectory(buildDir))
+	stream.RunCommandArgs("ninja -C -v", buildDir)
+
+	stream.CopyFile("skia/build/skia.dll", "./skia.dll")
+	return
+
 	//buffer := stream.NewBuffer("skia/skia/DEPS")
 	//for _, s := range stream.ToLines("skia/skia/DEPS") {
 	//	break //todo copy for commit id,因为github导入的仓库不知道怎么同步，有点仓库有8000多个分支，烦
@@ -77,75 +117,69 @@ if (target_os == "win") {`, 1)
 	*/
 }
 
-//go:generate go build -o build_skia
-func main2() {
-	workDir := "skia"
-	mylog.CheckIgnore(os.MkdirAll(workDir, 0755))
-	depotToolsDir := filepath.Join(workDir, "depot_tools")
-	if !stream.IsDirEx(depotToolsDir) {
-		mylog.Check(exec.Command("git", "clone", "--progress", "https://chromium.googlesource.com/chromium/tools/depot_tools.git", depotToolsDir).Run())
-	}
-	mylog.Check(os.Setenv("PATH", fmt.Sprintf("%s;%s", depotToolsDir, os.Getenv("PATH"))))
-
-	// 同步 Skia 依赖
-	skiaDir := filepath.Join(workDir, "skia")
-	if !stream.IsDirEx(skiaDir) {
-		mylog.Check(exec.Command("git", "clone", "--progress", "https://github.com/google/skia.git", skiaDir).Run())
-	}
-	mylog.Check(os.Chdir(skiaDir))
-	mylog.Check(exec.Command("python3", "tools/git-sync-deps").Run())
-	mylog.Check(exec.Command("python3", "bin/fetch-ninja").Run())
-	mylog.Check(os.RemoveAll("src/c"))
-	mylog.Check(os.RemoveAll("include/c"))
-	mylog.Check(os.Chdir(skiaDir))
-	stream.CopyFile("../../capi/sk_capi.h", "include/sk_capi.h")
-	stream.CopyFile("../../capi/sk_capi.cpp", "src/sk_capi.cpp")
-
-	modifyCoreGni()
-	modifySkPDFSubsetFontH()
-
-	// 构建 Skia DLL
-	buildDir := filepath.Join(skiaDir, "out", "Release")
-	mylog.Check(exec.Command("bin/gn", "gen", buildDir, "--args=is_debug=false is_official_build=true skia_enable_gpu=true is_component_build=true").Run())
-	mylog.Check(exec.Command("ninja", "-C", buildDir, "skia").Run())
-
-	// 检查构建目录
-	files := mylog.Check2(os.ReadDir(buildDir))
-
-	for _, file := range files {
-		fmt.Println("Build file:", file.Name())
-	}
-
-	distDir := "dist"
-	mylog.Check(os.MkdirAll(distDir, 0755))
-	mylog.Check(exec.Command("cp", filepath.Join(buildDir, "skia.dll"), filepath.Join(distDir, "skia.dll")).Run())
-
-	mylog.Success("", "DLL published successfully!")
-}
-
-func copyFile(src, dst string) {
-	input := mylog.Check2(os.ReadFile(src))
-	mylog.Check(os.WriteFile(dst, input, 0644))
-}
-
-func modifyCoreGni() {
-	filePath := "gn/core.gni"
-	input := mylog.Check2(os.ReadFile(filePath))
-	lines := string(input)
-	re := regexp.MustCompile(`src/sk_capi.cpp`)
-	lines = re.ReplaceAllString(lines, "")
-	re = regexp.MustCompile(`skia_core_sources = \[`)
-	lines = re.ReplaceAllString(lines, `skia_core_sources = [\n  "$_src/sk_capi.cpp",`)
-	mylog.Check(os.WriteFile("gn/core.gni.new", []byte(lines), 0644))
-	mylog.Check(os.Rename("gn/core.gni.new", "gn/core.gni"))
-}
-
-func modifySkPDFSubsetFontH() {
-	filePath := "src/pdf/SkPDFSubsetFont.h"
-	input := mylog.Check2(os.ReadFile(filePath))
-	lines := string(input)
-	re := regexp.MustCompile(`^class SkData;$`)
-	lines = re.ReplaceAllString(lines, `#include "include/core/SkData.h"`)
-	mylog.Check(os.WriteFile("src/pdf/SkPDFSubsetFont.h.new", []byte(lines), 0644))
-	mylog.Check(os.Rename("src/pdf/SkPDFSubsetFont.h.new", "src/pdf/SkPDFSubsetFont.h"))
-}
+const (
+	COMMON_ARGS = ` \
+is_debug=false \
+is_official_build=true \
+skia_enable_discrete_gpu=true \
+skia_enable_fontmgr_android=false \
+skia_enable_fontmgr_empty=false \
+skia_enable_fontmgr_fuchsia=false \
+skia_enable_fontmgr_win_gdi=false \
+skia_enable_gpu=true \
+skia_enable_pdf=true \
+skia_enable_skottie=false \
+skia_enable_skshaper=true \
+skia_enable_skshaper_tests=false \
+skia_enable_spirv_validation=false \
+skia_enable_tools=false \
+skia_enable_vulkan_debug_layers=false \
+skia_use_angle=false \
+skia_use_dawn=false \
+skia_use_dng_sdk=false \
+skia_use_egl=false \
+skia_use_expat=false \
+skia_use_ffmpeg=false \
+skia_use_fixed_gamma_text=false \
+skia_use_fontconfig=false \
+skia_use_gl=true \
+skia_use_harfbuzz=false \
+skia_use_icu=false \
+skia_use_libheif=false \
+skia_use_libjxl_decode=false \
+skia_use_lua=false \
+skia_use_metal=false \
+skia_use_piex=false \
+skia_use_system_libjpeg_turbo=false \
+skia_use_system_libpng=false \
+skia_use_system_libwebp=false \
+skia_use_system_zlib=false \
+skia_use_vulkan=false \
+skia_use_wuffs=true \
+skia_use_xps=false \
+skia_use_zlib=true \
+`
+	PLATFORM_ARGS = ` \
+is_component_build=true \
+skia_enable_fontmgr_win=true \
+skia_use_fonthost_mac=false \
+skia_enable_fontmgr_fontconfig=false \
+skia_use_fontconfig=false \
+skia_use_freetype=false \
+skia_use_x11=false \
+clang_win=\"C:\\Program Files\\LLVM\" \
+extra_cflags=[ \
+\"-DSKIA_C_DLL\", \
+\"-UHAVE_NEWLOCALE\", \
+\"-UHAVE_XLOCALE_H\", \
+\"-UHAVE_UNISTD_H\", \
+\"-UHAVE_SYS_MMAN_H\", \
+\"-UHAVE_MMAP\", \
+\"-UHAVE_PTHREAD\" \
+] \
+extra_ldflags=[ \
+\"/defaultlib:opengl32\", \
+\"/defaultlib:gdi32\" \
+] \
+`
+)
