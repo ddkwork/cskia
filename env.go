@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ddkwork/golibrary/stream"
 	"os"
 	"os/exec"
 )
@@ -81,6 +82,8 @@ func setEnvPath(dir string) error {
 
 func copyFile(src, dest string) error {
 	// 复制文件
+	stream.CopyFile(src, dest)
+	return nil
 	return exec.Command("cp", src, dest).Run()
 }
 
