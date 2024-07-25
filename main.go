@@ -17,11 +17,11 @@ func main() {
 	if githubWorkspace != "" {
 		mylog.Check(os.Chdir(githubWorkspace))
 	}
-	filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
-		println(path)
-		return err
-	})
-	return
+	//filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+	//	println(path)
+	//	return err
+	//})
+	//
 
 	//InstallNinjaAndGn()
 	stream.CopyFile("gn.exe", "c://windows//gn.exe")
