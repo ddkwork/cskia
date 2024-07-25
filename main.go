@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -10,15 +11,15 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-func AddToPath(newPath string) {
-	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";skia/depot_tools"))
+func AppendPathEnvWindows(newPath string) {
+	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";"+newPath))
 }
 
 func main() {
 	mylog.Check(stream.CreatDirectory("skia"))
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 
-	AddToPath("skia/depot_tools")
+	AppendPathEnvWindows("skia/depot_tools")
 
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
 	mylog.Check(os.Chdir("skia"))
@@ -42,7 +43,7 @@ func main() {
 	mylog.Check(os.Chdir("skia"))
 	genCmd := "${" + COMMON_ARGS + "} ${" + PLATFORM_ARGS + "}"
 
-	buildDir := filepath.Join("skia", "build")
+	buildDir := "build"
 	mylog.Check(stream.CreatDirectory(buildDir))
 	stream.RunCommand("python3 tools/git-sync-deps")
 	stream.RunCommand("python3 bin/fetch-gn")
@@ -50,7 +51,12 @@ func main() {
 	mylog.Check(stream.CreatDirectory(buildDir))
 	stream.RunCommandArgs("ninja -C -v", buildDir)
 
-	stream.CopyFile("skia/build/skia.dll", "./skia.dll")
+	filepath.Walk("build", func(path string, info fs.FileInfo, err error) error {
+		println(path)
+		return err
+	})
+
+	stream.CopyFile("skia/build/skia.dll", "../skia.dll")
 	return
 
 	//buffer := stream.NewBuffer("skia/skia/DEPS")
