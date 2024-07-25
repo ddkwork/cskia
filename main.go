@@ -15,13 +15,16 @@ import (
 func main() {
 	//path()
 	//return
-	InstallNinjaAndGn()
+	//InstallNinjaAndGn()
+	stream.CopyFile("gn.exe", "c://windows//gn.exe")
+	stream.CopyFile("ninja.exe", "c://windows//ninja.exe")
 	stream.RunCommand("ninja --version")
 	stream.RunCommand("py --version")
 	stream.RunCommand("gn.exe --version")
+	//return
+
 	stream.RunCommand("py tools/git-sync-deps")
-	stream.RunCommand("py fetch-ninja")
-	return
+	//stream.RunCommand("py fetch-ninja")
 
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
