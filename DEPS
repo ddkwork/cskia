@@ -69,7 +69,7 @@ deps = {
   "third_party/externals/vulkan-utility-libraries": "https://git.homegu.com/ddkwork/Vulkan-Utility-Libraries@67522b34edde86dbb97e164280291f387ade55fc",
   "third_party/externals/unicodetools"           : "https://git.homegu.com/ddkwork/unicodetools@66a3fa9dbdca3b67053a483d130564eabc5fe095",
   #"third_party/externals/v8"                     : "https://git.homegu.com/ddkwork/v8.git@5f1ae66d5634e43563b2d25ea652dfb94c31a3b4",
-  "third_party/externals/wuffs"                  : "https://git.homegu.com/ddkwork.git@e3f919ccfe3ef542cfc983a82146070258fb57f8",
+  "third_party/externals/wuffs"                  : "https://git.homegu.com/ddkwork/wuffs-mirror-release-c.git@e3f919ccfe3ef542cfc983a82146070258fb57f8",
   "third_party/externals/zlib"                   : "https://git.homegu.com/ddkwork/zlib@646b7f569718921d7d4b5b8e22572ff6c76f2596",
 
   'bin': {

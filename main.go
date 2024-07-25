@@ -13,34 +13,36 @@ import (
 )
 
 func main() {
-	buffer := stream.NewBuffer("skia/skia/DEPS")
-	for _, s := range stream.ToLines("skia/skia/DEPS") {
-		break //todo copy for commit id,因为github导入的仓库不知道怎么同步，有点仓库有8000多个分支，烦
-		s = strings.TrimSpace(s)
-		if strings.HasPrefix(s, "#") {
-			continue
-		}
-		if strings.Contains(s, "https://") && strings.Contains(s, "@") {
-			before, after, found := strings.Cut(s, ":")
-			if found {
-				if strings.HasPrefix(strings.TrimSpace(before), "#") {
-					continue
-				}
-				after = strings.TrimSpace(after)
-				after = strings.TrimPrefix(after, `"`)
-				url := strings.Split(after, "@")
-				src := url[0]
+	//buffer := stream.NewBuffer("skia/skia/DEPS")
+	//for _, s := range stream.ToLines("skia/skia/DEPS") {
+	//	break //todo copy for commit id,因为github导入的仓库不知道怎么同步，有点仓库有8000多个分支，烦
+	//	s = strings.TrimSpace(s)
+	//	if strings.HasPrefix(s, "#") {
+	//		continue
+	//	}
+	//	if strings.Contains(s, "https://") && strings.Contains(s, "@") {
+	//		before, after, found := strings.Cut(s, ":")
+	//		if found {
+	//			if strings.HasPrefix(strings.TrimSpace(before), "#") {
+	//				continue
+	//			}
+	//			after = strings.TrimSpace(after)
+	//			after = strings.TrimPrefix(after, `"`)
+	//			url := strings.Split(after, "@")
+	//			src := url[0]
+	//
+	//			index := strings.LastIndex(src, "/")
+	//			src = src[:index+1]
+	//			println(src)
+	//			buffer.Replace(src, "https://git.homegu.com/ddkwork/", 1)
+	//		}
+	//	}
+	//}
+	//stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
 
-				index := strings.LastIndex(src, "/")
-				src = src[:index+1]
-				println(src)
-				buffer.Replace(src, "https://git.homegu.com/ddkwork/", 1)
-			}
-		}
-	}
-	stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
+	stream.CopyFile("DEPS", "skia/skia/DEPS")
 
-	buffer = stream.NewBuffer("skia\\skia\\gn\\BUILDCONFIG.gn")
+	buffer := stream.NewBuffer("skia\\skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
 		buffer.Replace(`if (target_os == "win") {`, `
 win_sdk = "C:/Program Files (x86)/Windows Kits/10"
