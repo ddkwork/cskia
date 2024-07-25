@@ -150,7 +150,7 @@ Linux*)
       ] \
     "
 	;;
-MSYS_NT*)
+MINGW*)
 	OS_TYPE=windows
 	LIB_NAME=skia.dll
 	UNISON_LIB_NAME=skia_windows.dll
@@ -189,7 +189,7 @@ mkdir -p skia
 cd skia
 
 if [ ! -e depot_tools ]; then
-	git clone https://github.com/ddkwork/depot_tools.git
+	git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 	cd depot_tools
 #	git reset --hard "${DEPOT_TOOLS_COMMIT}"
 	cd ..
@@ -205,7 +205,6 @@ if [ ! -e skia ]; then
 	cd ..
 fi
 
-
 # Apply our changes.
 cd skia
 /bin/rm -rf src/c include/c
@@ -219,12 +218,7 @@ sed -e 's@^class SkData;$@#include "include/core/SkData.h"@' src/pdf/SkPDFSubset
 
 # Perform the build
 bin/gn gen "${BUILD_DIR}" --args="${COMMON_ARGS} ${PLATFORM_ARGS}"
-echo "BUILD_DIR: ${BUILD_DIR}"
-#echo "Args: ${COMMON_ARGS} ${PLATFORM_ARGS}"
-#ninja -C "${BUILD_DIR}" -v
-echo "Running ninja with verbose output"
-ninja -C "${BUILD_DIR}" -v
-#ninja -C . -v
+ninja -C "${BUILD_DIR}"
 
 # Copy the result into ${DIST}
 mkdir -p "${DIST}/include"
