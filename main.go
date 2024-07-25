@@ -40,7 +40,7 @@ func main() {
 	//}
 	//stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
 
-	stream.CopyFile("DEPS", "skia/skia/DEPS")
+	stream.CopyFile("DEPS_github", "skia/skia/DEPS")
 
 	buffer := stream.NewBuffer("skia\\skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
@@ -62,10 +62,14 @@ if (target_os == "win") {`, 1)
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = 8`, 1)
 	stream.WriteTruncate("skia\\skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
 
-	//python tools/git-sync-deps
-	//gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false"
-	//bin/gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
-	//ninja -C out/Shared
+	/*
+		   python tools/git-sync-deps
+		gn gen out/Shared --args="is_debug=false is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_zlib=false skia_enable_tools=false extra_cflags=[\"/arch:AVX2\", \"/arch:AVX512\"]"
+
+			   gn gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
+		   ninja -C out/Shared
+
+	*/
 }
 
 //go:generate go build -o build_skia
