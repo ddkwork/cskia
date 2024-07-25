@@ -12,7 +12,22 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
+package main
+
+import (
+"fmt"
+"os"
+)
+
+
 func main() {
+	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
+	if githubWorkspace == "" {
+		fmt.Println("GITHUB_WORKSPACE environment variable is not set")
+	} else {
+		fmt.Printf("GitHub Actions workspace directory: %s\n", githubWorkspace)
+	}
+	return
 	//path()
 	//return
 	//InstallNinjaAndGn()
