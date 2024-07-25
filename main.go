@@ -15,6 +15,7 @@ import (
 func main() {
 	//path()
 	//return
+	InstallNinjaAndGn()
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
 
@@ -42,7 +43,7 @@ func main() {
 	stream.RunCommand("py --version")
 	stream.RunCommand("gn.exe --version")
 	stream.RunCommand("py tools/git-sync-deps")
-	//stream.RunCommand("py fetch-ninja")
+	stream.RunCommand("py fetch-ninja")
 
 	buildDir := "out/Static"
 	mylog.Check(stream.CreatDirectory(buildDir))
