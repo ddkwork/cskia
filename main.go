@@ -15,6 +15,7 @@ import (
 func main() {
 	buffer := stream.NewBuffer("skia/skia/DEPS")
 	for _, s := range stream.ToLines("skia/skia/DEPS") {
+		break //todo copy for commit id,因为github导入的仓库不知道怎么同步，有点仓库有8000多个分支，烦
 		s = strings.TrimSpace(s)
 		if strings.HasPrefix(s, "#") {
 			continue
