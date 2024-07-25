@@ -26,7 +26,8 @@ jobs:
           msys2 -c "pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain"
 
       - name: Run build script
-        run: ./build.sh
+        run: |
+          msys2 -c "./build.sh"
 
       - name: Commit and push skia.dll
         run: |
