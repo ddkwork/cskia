@@ -3,8 +3,8 @@ set -eo pipefail
 
 # These two variables should be set in tandem to keep a consistent set of sources.
 # Last set Sat Jun 15 11:00:00 PDT 2024
-DEPOT_TOOLS_COMMIT=1d1f17af898bc5158fb1128952894ac061b06f56
-SKIA_BRANCH=chrome/m127
+#DEPOT_TOOLS_COMMIT=1d1f17af898bc5158fb1128952894ac061b06f56
+SKIA_BRANCH=chrome/m128
 
 for arg in "$@"; do
 	case "$arg" in
@@ -150,7 +150,7 @@ Linux*)
       ] \
     "
 	;;
-MINGW*)
+MSYS_NT*)
 	OS_TYPE=windows
 	LIB_NAME=skia.dll
 	UNISON_LIB_NAME=skia_windows.dll
@@ -191,7 +191,7 @@ cd skia
 if [ ! -e depot_tools ]; then
 	git clone https://git.homegu.com/ddkwork/depot_tools.git
 	cd depot_tools
-	git reset --hard "${DEPOT_TOOLS_COMMIT}"
+#	git reset --hard "${DEPOT_TOOLS_COMMIT}"
 	cd ..
 fi
 export PATH="${PWD}/depot_tools:${PATH}"
@@ -204,6 +204,7 @@ if [ ! -e skia ]; then
 	python3 bin/fetch-ninja
 	cd ..
 fi
+
 
 # Apply our changes.
 cd skia
@@ -218,7 +219,12 @@ sed -e 's@^class SkData;$@#include "include/core/SkData.h"@' src/pdf/SkPDFSubset
 
 # Perform the build
 bin/gn gen "${BUILD_DIR}" --args="${COMMON_ARGS} ${PLATFORM_ARGS}"
-ninja -C "${BUILD_DIR}"
+echo "BUILD_DIR: ${BUILD_DIR}"
+#echo "Args: ${COMMON_ARGS} ${PLATFORM_ARGS}"
+#ninja -C "${BUILD_DIR}" -v
+echo "Running ninja with verbose output"
+ninja -C "${BUILD_DIR}" -v
+#ninja -C . -v
 
 # Copy the result into ${DIST}
 mkdir -p "${DIST}/include"
