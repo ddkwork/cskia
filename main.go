@@ -11,21 +11,12 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-func AppendPathEnvWindows(newPath string) {
-	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";"+newPath))
-}
-
 func main() {
-	mylog.Check(stream.CreatDirectory("skia"))
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-
-	AppendPathEnvWindows("skia/depot_tools")
-
+	AppendPathEnvWindows("depot_tools")
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
-	mylog.Check(os.Chdir("skia"))
-	stream.RunCommand("python3 tools/git-sync-deps")
-	stream.RunCommand("python3 bin/fetch-ninja")
-	mylog.Check(os.Chdir(".."))
+	stream.RunCommand("python3 skia/tools/git-sync-deps")
+	stream.RunCommand("python3 skia/bin/fetch-ninja")
 
 	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
 	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
@@ -40,23 +31,22 @@ func main() {
 #include "include/docs/SkPDFDocument.h"`, 1)
 	stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
 
-	mylog.Check(os.Chdir("skia"))
 	genCmd := "${" + COMMON_ARGS + "} ${" + PLATFORM_ARGS + "}"
 
 	buildDir := "build"
 	mylog.Check(stream.CreatDirectory(buildDir))
-	stream.RunCommand("python3 tools/git-sync-deps")
-	stream.RunCommand("python3 bin/fetch-gn")
+	stream.RunCommand("python3 skia/tools/git-sync-deps")
+	stream.RunCommand("python3 skia/bin/fetch-gn")
 	stream.RunCommandArgs("bin/gen", strconv.Quote(buildDir), "--args=", strconv.Quote(genCmd))
 	mylog.Check(stream.CreatDirectory(buildDir))
-	stream.RunCommandArgs("ninja -C -v", buildDir)
+	stream.RunCommandArgs("skia/bin/ninja -C -v", buildDir)
 
-	filepath.Walk("build", func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk("skia/build", func(path string, info fs.FileInfo, err error) error {
 		println(path)
 		return err
 	})
 
-	stream.CopyFile("skia/build/skia.dll", "../skia.dll")
+	stream.CopyFile("skia/build/skia.dll", "./skia.dll")
 	return
 
 	//buffer := stream.NewBuffer("skia/skia/DEPS")
@@ -121,6 +111,10 @@ if (target_os == "win") {`, 1)
 				   ninja -C out/Shared
 
 	*/
+}
+
+func AppendPathEnvWindows(newPath string) {
+	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";"+newPath))
 }
 
 const (
