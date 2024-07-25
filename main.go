@@ -76,6 +76,9 @@ func main() {
 	}
 
 	filepath.Walk("out/Static", func(path string, info fs.FileInfo, err error) error {
+		if strings.Contains(path, "obj") {
+			return err
+		}
 		println(path)
 		return err
 	})
