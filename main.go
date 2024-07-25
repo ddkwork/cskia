@@ -19,7 +19,12 @@ func main() {
 	} else {
 		fmt.Printf("GitHub Actions workspace directory: %s\n", githubWorkspace)
 	}
+	filepath.Walk(githubWorkspace, func(path string, info fs.FileInfo, err error) error {
+		println(path)
+		return err
+	})
 	return
+
 	//path()
 	//return
 	//InstallNinjaAndGn()
@@ -39,6 +44,7 @@ func main() {
 	AppendPathEnvWindows("depot_tools")
 
 	//githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
+	//GitHub Actions workspace directory: D:\a\cskia\cskia
 	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.h"), "skia/include/sk_capi.h")
 	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.cpp"), "skia/src/sk_capi.cpp")
 
