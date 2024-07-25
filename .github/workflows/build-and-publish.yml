@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          msys2 -c "pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain"
+          msys2 -c "pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain git"
 
       - name: Run build script
         run: |
