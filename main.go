@@ -12,14 +12,6 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-package main
-
-import (
-"fmt"
-"os"
-)
-
-
 func main() {
 	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
 	if githubWorkspace == "" {
@@ -46,7 +38,7 @@ func main() {
 
 	AppendPathEnvWindows("depot_tools")
 
-	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
+	//githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
 	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.h"), "skia/include/sk_capi.h")
 	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.cpp"), "skia/src/sk_capi.cpp")
 
