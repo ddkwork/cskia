@@ -31,8 +31,9 @@ func main() {
 
 	AppendPathEnvWindows("depot_tools")
 
-	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
-	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
+	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
+	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.h"), "skia/include/sk_capi.h")
+	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.cpp"), "skia/src/sk_capi.cpp")
 
 	gni := stream.NewBuffer("skia/gn/core.gni")
 	if !gni.Contains("sk_capi.cpp") {
