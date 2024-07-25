@@ -1,0 +1,40 @@
+name: Build and Push skia.dll
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22.5
+
+      - name: Install LLVM
+        run: |
+          choco install llvm
+          echo "C:\Program Files\LLVM\bin" >> $GITHUB_PATH
+
+      - name: build dll
+        run: go run .
+
+      - name: Commit and push skia.dll
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add skia/build/skia.dll
+          git commit -m "Add skia.dll built by GitHub Actions"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.tk }}
