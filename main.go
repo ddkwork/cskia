@@ -14,25 +14,15 @@ import (
 
 func main() {
 	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
-	if githubWorkspace == "" {
-		fmt.Println("GITHUB_WORKSPACE environment variable is not set")
-	} else {
-		fmt.Printf("GitHub Actions workspace directory: %s\n", githubWorkspace)
+	if githubWorkspace != "" {
+		mylog.Check(os.Chdir(githubWorkspace))
 	}
-	//filepath.Walk(githubWorkspace, func(path string, info fs.FileInfo, err error) error {
-	//	println(path)
-	//	return err
-	//})
-	//return
-
-	//return
 	//InstallNinjaAndGn()
 	stream.CopyFile("gn.exe", "c://windows//gn.exe")
 	stream.CopyFile("ninja.exe", "c://windows//ninja.exe")
 	stream.RunCommand("ninja --version")
 	stream.RunCommand("py --version")
 	stream.RunCommand("gn.exe --version")
-	//return
 
 	stream.RunCommand("py tools/git-sync-deps")
 	//stream.RunCommand("py fetch-ninja")
@@ -42,12 +32,8 @@ func main() {
 	//path()
 	AppendPathEnvWindows("depot_tools")
 
-	//githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
-	//GitHub Actions workspace directory: D:\a\cskia\cskia
-	//D:\a\cskia\cskia\capi\sk_capi.cpp
-	//D:\a\cskia\cskia\capi\sk_capi.h
-	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.h"), filepath.Join(githubWorkspace, "skia/include/sk_capi.h"))
-	stream.CopyFile(filepath.Join(githubWorkspace, "capi/sk_capi.cpp"), filepath.Join(githubWorkspace, "skia/src/sk_capi.cpp"))
+	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
+	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
 
 	gni := stream.NewBuffer("skia/gn/core.gni")
 	if !gni.Contains("sk_capi.cpp") {
