@@ -25,7 +25,6 @@ func main() {
 	//})
 	//return
 
-	//path()
 	//return
 	//InstallNinjaAndGn()
 	stream.CopyFile("gn.exe", "c://windows//gn.exe")
@@ -40,7 +39,7 @@ func main() {
 
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
-
+	path()
 	AppendPathEnvWindows("depot_tools")
 
 	//githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
@@ -166,7 +165,7 @@ extra_ldflags=[
 )
 
 func path() {
-	stream.CopyFile("DEPS_github", "skia/skia/DEPS")
+	//stream.CopyFile("DEPS_github", "skia/skia/DEPS")
 
 	buffer := stream.NewBuffer("skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
