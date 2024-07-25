@@ -15,7 +15,6 @@ COMMON_ARGS=" \
   skia_enable_fontmgr_win_gdi=false \
   skia_enable_gpu=true \
   skia_enable_pdf=true \
-  skia_enable_skottie=false \
   skia_enable_skshaper=true \
   skia_enable_skshaper_tests=false \
   skia_enable_spirv_validation=false \
