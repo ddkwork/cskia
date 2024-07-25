@@ -39,7 +39,7 @@ func main() {
 
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 	stream.RunCommand("git clone --progress -b chrome/m128 https://github.com/google/skia.git")
-	path()
+	//path()
 	AppendPathEnvWindows("depot_tools")
 
 	//githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
