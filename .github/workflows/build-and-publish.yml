@@ -94,15 +94,13 @@ jobs:
         run: |
           ls skia/out/Release
           cp skia/out/Release/skia.dll skia.dll
-          
 
       - name: Commit and push skia.dll
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add skia/out/Release/skia.dll
+          git add skia.dll
           git commit -m "Add skia.dll built by GitHub Actions"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.tk }}
-
