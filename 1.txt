@@ -4,6 +4,12 @@ git clone https://github.com/google/skia
 https://www.bilibili.com/video/BV1Kj421X75x/?spm_id_from=333.337.search-card.all.click
 skia在windows下编译
 
+.\bin\gn.exe gen out/vs2022.x64.Release --ide="vs2022" --sln="skia" --args="target_cpu=\"x64\" is_official_build=true skia_use_system_libpng=false skia_use_system_libjpeg_turbo=false skia_use_system_zlib=false skia_use_icu=false skia_use_expat=false skia_use_libwebp_decode=false skia_use_libwebp_encode=false skia_use_xps=false skia_enable_pdf=false is_debug=false"
+ninja -C out/vs2022.x64.Release
+
+
+
+
 mkdir build
 cd build
 cmake .. -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=Release -DSKIA_BUILD_SHARED=ON
