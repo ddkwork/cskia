@@ -1,10 +1,14 @@
 package main
 
 import (
+	"archive/zip"
 	"fmt"
 	"github.com/ddkwork/golibrary/stream"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func InstallNinjaAndGn() {
@@ -53,13 +57,94 @@ func InstallNinjaAndGn() {
 
 func downloadAndUnzip(url, zipFile, destDir string) error {
 	// 下载文件
-	err := exec.Command("curl", "-L", url, "-o", zipFile).Run()
+	err := downloadFile(url, zipFile)
 	if err != nil {
 		return err
 	}
 
 	// 解压文件
-	err = exec.Command("unzip", zipFile, "-d", destDir).Run()
+	err = unzip(zipFile, destDir)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func downloadFile(url, filepath string) error {
+	// 创建目标文件
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// 获取数据
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// 将响应体写入文件
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func unzip(zipFile, destDir string) error {
+	// 打开ZIP文件
+	r, err := zip.OpenReader(zipFile)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	// 创建目标目录
+	if err := os.MkdirAll(destDir, 0755); err != nil {
+		return err
+	}
+
+	// 遍历ZIP文件中的每个文件/目录
+	for _, f := range r.File {
+		err := unzipFile(f, destDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func unzipFile(f *zip.File, destDir string) error {
+	// 打开ZIP文件中的文件
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+
+	// 构建解压后的文件路径
+	path := filepath.Join(destDir, f.Name)
+
+	// 如果是目录，创建目录
+	if f.FileInfo().IsDir() {
+		os.MkdirAll(path, f.Mode())
+		return nil
+	}
+
+	// 创建解压后的文件
+	outFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	// 将ZIP文件中的内容复制到解压后的文件
+	_, err = io.Copy(outFile, rc)
 	if err != nil {
 		return err
 	}
