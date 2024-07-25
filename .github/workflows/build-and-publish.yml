@@ -27,6 +27,7 @@ jobs:
 
       - name: Run build script
         run: |
+          msys2 -c "python3 skia/skia/tools/git-sync-deps"
           msys2 -c "./build.sh"
 
       - name: Commit and push skia.dll
