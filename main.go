@@ -160,7 +160,7 @@ extra_ldflags=[
 
 func path() {
 	//stream.CopyFile("DEPS_github", "skia/skia/DEPS")
-
+	//skia_viewer
 	buffer := stream.NewBuffer("skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
 		buffer.Replace(`if (target_os == "win") {`, `
@@ -174,6 +174,7 @@ clang_win = "C:\Program Files\LLVM"
 clang_win_version = "18.1.7"
 
 if (target_os == "win") {`, 1)
+		buffer.Replace(`assert(!(is_debug && is_official_build))`, `//assert(!(is_debug && is_official_build))`, 1)
 		stream.WriteTruncate("skia\\gn\\BUILDCONFIG.gn", buffer.Bytes())
 	}
 
