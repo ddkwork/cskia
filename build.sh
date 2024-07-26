@@ -1,24 +1,71 @@
 #! /usr/bin/env bash
+set -eo pipefail
 
-SKIA_BRANCH=chrome/m128
+# These two variables should be set in tandem to keep a consistent set of sources.
+# Last set Sat Jun 15 11:00:00 PDT 2024
+DEPOT_TOOLS_COMMIT=1d1f17af898bc5158fb1128952894ac061b06f56
+SKIA_BRANCH=chrome/m127
+
+for arg in "$@"; do
+	case "$arg" in
+	--args | -a) SHOW_ARGS=1 ;;
+	--clean | -c) CLEAN=restore ;;
+	--CLEAN | -C) CLEAN=full ;;
+	--help | -h)
+		echo "$0 [options]"
+		echo "  -a, --args  Display the available args list for the skia build (no build)"
+		echo "  -c, --clean Remove the dist and skia/build directories (no build)"
+		echo "  -C, --CLEAN Remove the dist and skia directories (no build)"
+		echo "  -h, --help This help text"
+		exit 0
+		;;
+	*)
+		echo "Invalid argument: $arg"
+		exit 1
+		;;
+	esac
+done
+
+if [ "$CLEAN"x == "fullx" ]; then
+	/bin/rm -rf dist skia
+	exit 0
+fi
+
+if [ "$CLEAN"x == "restorex" ]; then
+	/bin/rm -rf dist skia/build
+	if [ -d skia/skia ]; then
+		cd skia/skia
+		git checkout -- .
+		rm include/sk_capi.h src/sk_capi.cpp
+	fi
+	exit 0
+fi
+
+if [ "$SHOW_ARGS"x == "1x" ]; then
+	export PATH="${PWD}/skia/depot_tools:${PATH}"
+	cd skia/skia
+	bin/gn args ../build --list --short
+	exit 0
+fi
 
 BUILD_DIR=${PWD}/skia/build
 DIST=${PWD}/dist
 
+# As changes to Skia are made, these args may need to be adjusted.
+# Use 'bin/gn args $BUILD_DIR --list' to see what args are available.
 COMMON_ARGS=" \
   is_debug=false \
   is_official_build=true \
   skia_enable_discrete_gpu=true \
-  skia_enable_flutter_defines=false \
   skia_enable_fontmgr_android=false \
   skia_enable_fontmgr_empty=false \
   skia_enable_fontmgr_fuchsia=false \
   skia_enable_fontmgr_win_gdi=false \
   skia_enable_gpu=true \
-  skia_enable_particles=true \
   skia_enable_pdf=true \
   skia_enable_skottie=false \
   skia_enable_skshaper=true \
+  skia_enable_skshaper_tests=false \
   skia_enable_spirv_validation=false \
   skia_enable_tools=false \
   skia_enable_vulkan_debug_layers=false \
@@ -34,10 +81,10 @@ COMMON_ARGS=" \
   skia_use_harfbuzz=false \
   skia_use_icu=false \
   skia_use_libheif=false \
+  skia_use_libjxl_decode=false \
   skia_use_lua=false \
   skia_use_metal=false \
   skia_use_piex=false \
-  skia_use_sfntly=false \
   skia_use_system_libjpeg_turbo=false \
   skia_use_system_libpng=false \
   skia_use_system_libwebp=false \
@@ -138,13 +185,13 @@ MINGW*)
 esac
 
 # Setup the Skia tree, pulling sources, if needed.
-mkdir -p
+mkdir -p skia
 cd skia
 
 if [ ! -e depot_tools ]; then
 	git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 	cd depot_tools
-#	git reset --hard "${DEPOT_TOOLS_COMMIT}"
+	git reset --hard "${DEPOT_TOOLS_COMMIT}"
 	cd ..
 fi
 export PATH="${PWD}/depot_tools:${PATH}"
@@ -182,3 +229,11 @@ cp "${BUILD_DIR}/${LIB_NAME}" "${DIST}/lib/${OS_TYPE}/"
 
 cd ../..
 
+# If present, also copy the results into the unison build tree
+if [ -d ../unison ]; then
+	RELATIVE_UNISON_DIR=../unison/internal/skia
+	mkdir -p "${RELATIVE_UNISON_DIR}"
+	cp "${DIST}/include/sk_capi.h" "${RELATIVE_UNISON_DIR}/"
+	cp "${DIST}/lib/${OS_TYPE}/${LIB_NAME}" "${RELATIVE_UNISON_DIR}/${UNISON_LIB_NAME}"
+	echo "Copied distribution to unison"
+fi

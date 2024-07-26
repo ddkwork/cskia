@@ -31,7 +31,7 @@ func main() {
 	stream.RunCommand("gn.exe --version")
 
 	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-	stream.RunCommand("git clone --progress -b chrome/m110 https://github.com/google/skia.git")
+	stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
 	path() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
@@ -93,19 +93,18 @@ func AppendPathEnvWindows(newPath string) {
 
 const (
 	COMMON_ARGS = ` 
-  is_debug=false 
+  is_debug=true 
   is_official_build=true 
   skia_enable_discrete_gpu=true 
-  skia_enable_flutter_defines=false 
   skia_enable_fontmgr_android=false 
   skia_enable_fontmgr_empty=false 
   skia_enable_fontmgr_fuchsia=false 
   skia_enable_fontmgr_win_gdi=false 
   skia_enable_gpu=true 
-  skia_enable_particles=true 
   skia_enable_pdf=true 
   skia_enable_skottie=false 
   skia_enable_skshaper=true 
+  skia_enable_skshaper_tests=false 
   skia_enable_spirv_validation=false 
   skia_enable_tools=false 
   skia_enable_vulkan_debug_layers=false 
@@ -121,10 +120,10 @@ const (
   skia_use_harfbuzz=false 
   skia_use_icu=false 
   skia_use_libheif=false 
+  skia_use_libjxl_decode=false 
   skia_use_lua=false 
   skia_use_metal=false 
   skia_use_piex=false 
-  skia_use_sfntly=false 
   skia_use_system_libjpeg_turbo=false 
   skia_use_system_libpng=false 
   skia_use_system_libwebp=false 
