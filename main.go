@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"runtime"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -49,8 +50,6 @@ func main() {
 	}
 	// 使用 setx 命令将路径添加到系统的 PATH 环境变量中
 	//cmd := exec.Command("setx", "PATH", fmt.Sprintf("%s;%s", "%PATH%", pythonPath), "/M")
-	//cmd.Stdout = nil
-	//cmd.Stderr = nil
 	//
 	//err = cmd.Run()
 	//if err != nil {
@@ -84,8 +83,6 @@ func main() {
 
 	// 使用 setx 命令将路径设置为系统的环境变量
 	//cmd := exec.Command("setx", "PYTHON_PATH", pythonPath, "/M")
-	//cmd.Stdout = nil
-	//cmd.Stderr = nil
 	//
 	//err = cmd.Run()
 	//if err != nil {
@@ -109,6 +106,12 @@ func main() {
 	//stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
+
+
+	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
+	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
+	stream.WriteTruncate("skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
+
 
 	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
 	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
@@ -143,9 +146,21 @@ func main() {
 		return
 	}
 
-	cmd = exec.Command("ninja.exe", "-C", "out/Static")
+	//gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
+	//gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py
+	//  ide="vs2022"
+	//  sln="skia"
+
+	//  #dlsymutil_pool_depth exec_script("num_cpus.py", [], "value")
+  //dlsymutil_pool_depth =8
+  // todo numberof cpu  test action
+	 
+
+	cmd = exec.Command("ninja.exe", "-C", "out/Static","-v")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	log.Println("ninja run")
-	output, err = cmd.CombinedOutput()
+	  err = cmd.Run()
 	if err != nil {
 		fmt.Println("Error building Skia:", err)
 		fmt.Println("ninja output:", string(output))
@@ -171,7 +186,10 @@ func AppendPathEnvWindows(newPath string) {
 const (
 	COMMON_ARGS = ` 
   win_vc="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC"
-  clang_win_version=18 
+  clang_win_version=18
+  dlsymutil_pool_depth=8
+  win_toolchain_version="14.40.33807"
+  win_sdk_version="10.0.26100.0"
   is_debug=false 
   is_official_build=true 
   skia_enable_discrete_gpu=true 
@@ -213,7 +231,7 @@ const (
   skia_use_zlib=true 
 `
 	PLATFORM_ARGS = ` 
-is_component_build=true 
+is_component_build=false 
 skia_enable_fontmgr_win=true 
 skia_use_fonthost_mac=false 
 skia_enable_fontmgr_fontconfig=false 
