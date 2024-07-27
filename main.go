@@ -14,11 +14,17 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-func main() {
+func isAction() bool {
 	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
 	if githubWorkspace != "" {
 		mylog.Check(os.Chdir(githubWorkspace))
+	return true
 	}
+	return false
+}
+
+func main() {
+isAction()
 	//C:\Users\Admin\Desktop>where python
 	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
 	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
@@ -102,8 +108,10 @@ func main() {
 	stream.RunCommand("python --version")
 	stream.RunCommand("gn.exe --version")
 
-	//stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-	//stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
+	if isAction() {
+		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
+		stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
+	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
@@ -132,7 +140,9 @@ func main() {
 	log.Println("add c bind fiels")
 
 	mylog.Check(os.Chdir("skia"))
-	//stream.RunCommand("py tools/git-sync-deps")
+	if isAction() {
+		stream.RunCommand("py tools/git-sync-deps")
+	}
 	//stream.RunCommand("py fetch-ninja")
 
 	buildDir := "out/Static"
