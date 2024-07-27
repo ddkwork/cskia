@@ -140,14 +140,13 @@ func main() {
 	}
 	log.Println("add c bind fiels")
 
-	mylog.Check(stream.IsDir("skia"))
 	mylog.Check(os.Chdir("skia"))
-	mylog.Info("RunDir", stream.RunDir())
+	mylog.Info("RunDir must skia", stream.RunDir())
 
 	if isAction {
-		stream.RunCommand("py tools/git-sync-deps")
+		stream.RunCommand("python tools/git-sync-deps")
 	}
-	//stream.RunCommand("py fetch-ninja")
+	//stream.RunCommand("python fetch-ninja")
 
 	buildDir := "out/Static"
 	mylog.Check(stream.CreatDirectory(buildDir))
