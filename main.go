@@ -15,16 +15,11 @@ import (
 )
 
 // cmd := exec.Command("vswhere", "-latest", "-property", "installationVersion")
-var (
-	githubWorkspace = os.Getenv("GITHUB_WORKSPACE")
-	isAction        = githubWorkspace != ""
-)
 
 func main() {
-	if isAction {
-		mylog.Check(os.Chdir(githubWorkspace))
+	if mylog.IsAction {
+		mylog.ChdirToGithubWorkspace()
 	}
-	mylog.Info("RunDir", stream.RunDir())
 
 	//C:\Users\Admin\Desktop>where python
 	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
@@ -109,7 +104,7 @@ func main() {
 	stream.RunCommand("python --version")
 	stream.RunCommand("gn.exe --version")
 
-	if isAction {
+	if mylog.IsAction {
 		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 		stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
 	}
@@ -143,7 +138,7 @@ func main() {
 	mylog.Check(os.Chdir("skia"))
 	mylog.Info("RunDir must skia", stream.RunDir())
 
-	if isAction {
+	if mylog.IsAction {
 		stream.RunCommand("python tools/git-sync-deps")
 	}
 	//stream.RunCommand("python fetch-ninja")
