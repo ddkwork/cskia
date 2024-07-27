@@ -14,6 +14,10 @@ import (
 )
 
 func main() {
+	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
+	if githubWorkspace != "" {
+		mylog.Check(os.Chdir(githubWorkspace))
+	}
 	//C:\Users\Admin\Desktop>where python
 	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
 	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
