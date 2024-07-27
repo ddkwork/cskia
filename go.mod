@@ -3,7 +3,7 @@ module cskia
 go 1.22.5
 
 require (
-	github.com/ddkwork/golibrary v0.0.0-20240726120225-55a9b27a579e
+	github.com/ddkwork/golibrary v0.0.0-20240727040947-47d0c0e16d90
 	github.com/stretchr/testify v1.9.0
 )
 
