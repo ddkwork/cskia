@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,26 +14,96 @@ import (
 )
 
 func main() {
-	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
-	if githubWorkspace != "" {
-		mylog.Check(os.Chdir(githubWorkspace))
+	//C:\Users\Admin\Desktop>where python
+	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
+	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
+	//stream.RunCommand("where python")//todo bug
+
+	// 查找 python 的路径
+	out, err := exec.Command("where", "python").Output()
+	if err != nil {
+		fmt.Println("Error finding python:", err)
+		return
 	}
-	//filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
-	//	println(path)
-	//	return err
-	//})
+
+	index := 0
+	pythonPaths := strings.Split(string(out), "\n")
+	for i, path := range pythonPaths {
+		if path != "" && !strings.Contains(path, "WindowsApps") {
+			index = i
+		}
+		pythonPaths[i] = strings.TrimSpace(path)
+	}
+
+	pythonPath := pythonPaths[index]
+	pythonPath = filepath.Dir(pythonPath)
+	println(pythonPath)
+	AppendPathEnvWindows(pythonPath)
+	if !isAdmin() {
+		runMeElevated()
+		return
+	}
+	// 使用 setx 命令将路径添加到系统的 PATH 环境变量中
+	//cmd := exec.Command("setx", "PATH", fmt.Sprintf("%s;%s", "%PATH%", pythonPath), "/M")
+	//cmd.Stdout = nil
+	//cmd.Stderr = nil
+	//
+	//err = cmd.Run()
+	//if err != nil {
+	//	fmt.Println("Error setting environment variable:", err)
+	//	return
+	//}
+
+	out, err = exec.Command("cmd", "/C", "echo %PATH%").Output()
+	if err != nil {
+		fmt.Println("Error getting PATH:", err)
+		return
+	}
+	currentPath := strings.TrimSpace(string(out))
+
+	// 假设pythonPath是你想要添加的Python路径
+
+	// 将Python路径添加到PATH的最前面
+	newPath := fmt.Sprintf("%s;%s", pythonPath, currentPath)
+
+	// 使用setx命令设置新的PATH
+	cmd := exec.Command("setx", "PATH", newPath, "/M")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error setting PATH:", err)
+		return
+	}
+
+	fmt.Println("Path added successfully to PATH:", pythonPath)
+
+	//mylog.Check(addPathToSystemPath(filepath.Dir(pythonPath)))
+
+	// 使用 setx 命令将路径设置为系统的环境变量
+	//cmd := exec.Command("setx", "PYTHON_PATH", pythonPath, "/M")
+	//cmd.Stdout = nil
+	//cmd.Stderr = nil
+	//
+	//err = cmd.Run()
+	//if err != nil {
+	//	fmt.Println("Error setting environment variable:", err)
+	//	return
+	//}
+	//
+	//fmt.Println("PYTHON_PATH set successfully to:", pythonPath)
 	//
 
-	//InstallNinjaAndGn()
-	stream.CopyFile("gn.exe", "c://windows//gn.exe")
-	stream.CopyFile("ninja.exe", "c://windows//ninja.exe")
+	//setx PYTHONPATH "C:\new_path_demo;$env:PYTHONPATH"
+	//return
+
+	stream.CopyFile("gn.exe", "c:/windows/gn.exe")
+	stream.CopyFile("ninja.exe", "c:/windows/ninja.exe")
 	stream.RunCommand("ninja --version")
-	stream.RunCommand("py --version")
+	stream.RunCommand("python --version")
 	stream.RunCommand("gn.exe --version")
 
-	stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-	stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
-	path() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
+	//stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
+	//stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
+	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
 	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
@@ -51,15 +122,16 @@ func main() {
 #include "include/docs/SkPDFDocument.h"`, 1)
 		stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
 	}
+	log.Println("add c bind fiels")
 
 	mylog.Check(os.Chdir("skia"))
-	stream.RunCommand("py tools/git-sync-deps")
+	//stream.RunCommand("py tools/git-sync-deps")
 	//stream.RunCommand("py fetch-ninja")
 
 	buildDir := "out/Static"
 	mylog.Check(stream.CreatDirectory(buildDir))
 	args := fmt.Sprintf("--args=%s %s", COMMON_ARGS, PLATFORM_ARGS)
-	cmd := exec.Command("gn", "gen", "out/Static", "--args=", args)
+	cmd = exec.Command("gn", "gen", "out/Static", "--args=", args)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error running gn:", err)
@@ -68,6 +140,7 @@ func main() {
 	}
 
 	cmd = exec.Command("ninja.exe", "-C", "out/Static")
+	log.Println("ninja run")
 	output, err = cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error building Skia:", err)
@@ -93,7 +166,9 @@ func AppendPathEnvWindows(newPath string) {
 
 const (
 	COMMON_ARGS = ` 
-  is_debug=true 
+  win_vc="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC"
+  clang_win_version=18 
+  is_debug=false 
   is_official_build=true 
   skia_enable_discrete_gpu=true 
   skia_enable_fontmgr_android=false 
@@ -158,11 +233,14 @@ extra_ldflags=[
 `
 )
 
-func path() {
+func fixGn() {
+	log.Println("fix gn")
 	//stream.CopyFile("DEPS_github", "skia/skia/DEPS")
 	//skia_viewer
 	buffer := stream.NewBuffer("skia\\gn\\BUILDCONFIG.gn")
 	if !strings.Contains(buffer.String(), "win_vc = \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\"") {
+		buffer.Replace(`assert(!(is_debug && is_official_build))`, `#assert(!(is_debug && is_official_build))`, 1) //todo bug
+
 		buffer.Replace(`if (target_os == "win") {`, `
 win_sdk = "C:/Program Files (x86)/Windows Kits/10"
 win_sdk_version = "10.0.26100.0"
@@ -174,7 +252,6 @@ clang_win = "C:\Program Files\LLVM"
 clang_win_version = "18.1.7"
 
 if (target_os == "win") {`, 1)
-		buffer.Replace(`assert(!(is_debug && is_official_build))`, `#assert(!(is_debug && is_official_build))`, 1)
 		stream.WriteTruncate("skia\\gn\\BUILDCONFIG.gn", buffer.Bytes())
 	}
 
