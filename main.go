@@ -14,17 +14,18 @@ import (
 	"github.com/ddkwork/golibrary/stream"
 )
 
-func isAction() bool {
-	githubWorkspace := os.Getenv("GITHUB_WORKSPACE")
-	if githubWorkspace != "" {
-		mylog.Check(os.Chdir(githubWorkspace))
-	return true
-	}
-	return false
-}
+// cmd := exec.Command("vswhere", "-latest", "-property", "installationVersion")
+var (
+	githubWorkspace = os.Getenv("GITHUB_WORKSPACE")
+	isAction        = githubWorkspace != ""
+)
 
 func main() {
-isAction()
+	if isAction {
+		mylog.Check(os.Chdir(githubWorkspace))
+	}
+	mylog.Info("RunDir", stream.RunDir())
+
 	//C:\Users\Admin\Desktop>where python
 	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
 	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
@@ -108,20 +109,18 @@ isAction()
 	stream.RunCommand("python --version")
 	stream.RunCommand("gn.exe --version")
 
-	if isAction() {
+	if isAction {
 		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
 		stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
-
-	mylog.Info("num cpu",runtime.NumCPU())
+	mylog.Info("num cpu", runtime.NumCPU())
 
 	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
 	stream.WriteTruncate("skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
-
 
 	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
 	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
@@ -141,8 +140,11 @@ isAction()
 	}
 	log.Println("add c bind fiels")
 
+	mylog.Check(stream.IsDir("skia"))
 	mylog.Check(os.Chdir("skia"))
-	if isAction() {
+	mylog.Info("RunDir", stream.RunDir())
+
+	if isAction {
 		stream.RunCommand("py tools/git-sync-deps")
 	}
 	//stream.RunCommand("py fetch-ninja")
@@ -164,15 +166,14 @@ isAction()
 	//  sln="skia"
 
 	//  #dlsymutil_pool_depth exec_script("num_cpus.py", [], "value")
-  //dlsymutil_pool_depth =8
-  // todo numberof cpu  test action
-	 
+	//dlsymutil_pool_depth =8
+	// todo numberof cpu  test action
 
-	cmd = exec.Command("ninja.exe", "-C", "out/Static","-v")
+	cmd = exec.Command("ninja.exe", "-C", "out/Static", "-v")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	log.Println("ninja run")
-	  err = cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		fmt.Println("Error building Skia:", err)
 		fmt.Println("ninja output:", string(output))
