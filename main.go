@@ -220,7 +220,7 @@ skia_enable_fontmgr_fontconfig=false
 skia_use_fontconfig=false 
 skia_use_freetype=false 
 skia_use_x11=false 
-clang_win="C:Program FilesLLVM" 
+clang_win="C:\Program Files\LLVM" 
 extra_cflags=[ 
 "-DSKIA_C_DLL", 
 "-UHAVE_NEWLOCALE", 
