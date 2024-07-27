@@ -5,9 +5,9 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	"runtime"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/ddkwork/golibrary/mylog"
@@ -115,6 +115,8 @@ isAction()
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
+
+	mylog.Info("num cpu",runtime.NumCPU())
 
 	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
