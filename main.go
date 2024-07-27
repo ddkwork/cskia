@@ -17,10 +17,7 @@ import (
 // cmd := exec.Command("vswhere", "-latest", "-property", "installationVersion")
 
 func main() {
-	if mylog.IsAction {
-		mylog.ChdirToGithubWorkspace()
-	}
-
+	mylog.ChdirToGithubWorkspace()
 	//C:\Users\Admin\Desktop>where python
 	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
 	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
