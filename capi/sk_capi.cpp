@@ -34,6 +34,11 @@
 #include "include/docs/SkPDFDocument.h"
 #include "src/pdf/SkPDFDocumentPriv.h"
 
+#include "include/encode/SkJpegEncoder.h"
+#include "include/encode/SkPngEncoder.h"
+#include "include/encode/SkWebpEncoder.h"
+//#include "include/gpu/ganesh/SkImageGanesh.h"
+
 #define SK_SKIP_ARG__(keep, skip, ...) skip
 #define SK_SKIP_ARG_(args) SK_SKIP_ARG__ args
 #define SK_SKIP_ARG(...) SK_SKIP_ARG_((__VA_ARGS__, ))
@@ -1571,4 +1576,43 @@ sk_document_t* sk_document_make_pdf(sk_wstream_t* stream, sk_metadata_t* metadat
 	md.fRasterDPI = metadata->rasterDPI;
 	md.fEncodingQuality = metadata->encodingQuality;
 	return reinterpret_cast<sk_document_t*>(new SkPDFDocument(reinterpret_cast<SkWStream*>(stream), md));
+}
+
+void gr_direct_context_flush_and_submit(gr_direct_context_t* context, bool syncCPU) {
+    reinterpret_cast<GrDirectContext*>(context)->flushAndSubmit(true);
+//    reinterpret_cast<GrDirectContext*>(context)->flushAndSubmit(syncCPU ? GrSyncCpu::kYes : GrSyncCpu::kNo);
+}
+
+
+// ===== Functions from include/encode/SkJpegEncoder.h =====
+sk_data_t* sk_encode_jpeg(gr_direct_context_t* ctx, const sk_image_t* img, int quality) {
+return nullptr;
+//    SkJpegEncoder::Options options;
+//    options.fQuality = quality;
+//    return reinterpret_cast<sk_data_t*>(SkJpegEncoder::Encode(reinterpret_cast<GrDirectContext*>(ctx), reinterpret_cast<const SkImage*>(img), options).release());
+}
+
+// ===== Functions from include/encode/SkPngEncoder.h =====
+sk_data_t* sk_encode_png(gr_direct_context_t* ctx, const sk_image_t* img, int compressionLevel) {
+return nullptr;
+//    SkPngEncoder::Options options;
+//    options.fFilterFlags = SkPngEncoder::FilterFlag::kAll;
+//    options.fZLibLevel = compressionLevel;
+//    return reinterpret_cast<sk_data_t*>(SkPngEncoder::Encode(reinterpret_cast<GrDirectContext*>(ctx), reinterpret_cast<const SkImage*>(img), options).release());
+}
+
+// ===== Functions from include/encode/SkWebpEncoder.h =====
+sk_data_t* sk_encode_webp(gr_direct_context_t* ctx, const sk_image_t* img, float quality, bool lossy) {
+return nullptr;
+//    SkWebpEncoder::Options options;
+//    options.fCompression = lossy ? SkWebpEncoder::Compression::kLossy : SkWebpEncoder::Compression::kLossless;
+//    options.fQuality = quality;
+//    return reinterpret_cast<sk_data_t*>(SkWebpEncoder::Encode(reinterpret_cast<GrDirectContext*>(ctx), reinterpret_cast<const SkImage*>(img), options).release());
+}
+
+// ===== Functions from include/gpu/ganesh/SkImageGanesh.h =====
+sk_image_t* sk_image_texture_from_image(gr_direct_context_t* ctx, const sk_image_t* image, bool mipmapped, bool budgeted) {
+return nullptr;
+//    return reinterpret_cast<sk_image_t*>(SkImages::TextureFromImage(reinterpret_cast<GrDirectContext*>(ctx),
+//        reinterpret_cast<const SkImage*>(image), (skgpu::Mipmapped)mipmapped, (skgpu::Budgeted)budgeted).release());
 }

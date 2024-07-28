@@ -941,6 +941,20 @@ SK_C_API void sk_document_abort(sk_document_t* doc);
 // ===== Functions from include/docs/SkPDFDocument.h =====
 SK_C_API sk_document_t* sk_document_make_pdf(sk_wstream_t* stream, sk_metadata_t* metadata);
 
+SK_C_API void gr_direct_context_flush_and_submit(gr_direct_context_t* context, bool syncCPU);
+// ===== Functions from include/encode/SkJpegEncoder.h =====
+SK_C_API sk_data_t* sk_encode_jpeg(gr_direct_context_t* ctx, const sk_image_t* img, int quality);
+
+// ===== Functions from include/encode/SkPngEncoder.h =====
+SK_C_API sk_data_t* sk_encode_png(gr_direct_context_t* ctx, const sk_image_t* img, int compressionLevel);
+
+// ===== Functions from include/encode/SkWebpEncoder.h =====
+SK_C_API sk_data_t* sk_encode_webp(gr_direct_context_t* ctx, const sk_image_t* img, float quality, bool lossy);
+
+// ===== Functions from include/gpu/ganesh/SkImageGanesh.h =====
+SK_C_API sk_image_t* sk_image_texture_from_image(gr_direct_context_t* ctx, const sk_image_t* image, bool mipmapped, bool budgeted);
+
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
