@@ -103,7 +103,7 @@ func main() {
 
 	if mylog.IsAction {
 		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-		stream.RunCommand("git clone --progress -b chrome/m118 https://github.com/google/skia.git")
+		stream.RunCommand("git clone --progress -b chrome/m110 https://github.com/google/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
