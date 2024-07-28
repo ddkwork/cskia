@@ -109,6 +109,7 @@ func main() {
 	AppendPathEnvWindows("depot_tools")
 
 	mylog.Info("num cpu", runtime.NumCPU())
+	stream.CopyFile("DEPS_github", "skia/skia/DEPS")
 
 	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
@@ -138,7 +139,6 @@ func main() {
 	if mylog.IsAction {
 		stream.RunCommand("python tools/git-sync-deps")
 	}
-	stream.RunCommand("python tools/git-sync-deps")
 	//stream.RunCommand("python fetch-ninja")
 
 	buildDir := "out/Static"
