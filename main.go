@@ -133,11 +133,12 @@ func main() {
 	log.Println("add c bind fiels")
 
 	mylog.Check(os.Chdir("skia"))
-	mylog.Info("RunDir must skia", stream.RunDir())
+	mylog.Info("Chdir to", stream.RunDir())
 
 	if mylog.IsAction {
 		stream.RunCommand("python tools/git-sync-deps")
 	}
+	stream.RunCommand("python tools/git-sync-deps")
 	//stream.RunCommand("python fetch-ninja")
 
 	buildDir := "out/Static"
@@ -150,6 +151,7 @@ func main() {
 		fmt.Println("gn output:", string(output))
 		return
 	}
+	log.Println("gn gen args success")
 
 	//gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
 	//gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py
@@ -170,6 +172,7 @@ func main() {
 		fmt.Println("ninja output:", string(output))
 		return
 	}
+	log.Println("ninja build success")
 
 	filepath.Walk("out/Static", func(path string, info fs.FileInfo, err error) error {
 		if strings.Contains(path, "obj") {
@@ -232,7 +235,7 @@ const (
   skia_use_vulkan=false 
   skia_use_wuffs=true 
   skia_use_xps=false 
-  skia_use_zlib=true 
+  skia_use_zlib=false 
 `
 	PLATFORM_ARGS = ` 
 is_component_build=true
@@ -245,6 +248,8 @@ skia_use_x11=false
 clang_win="C:\Program Files\LLVM" 
 extra_cflags=[ 
 "-DSKIA_C_DLL", 
+"-DCRC32_SIMD_SSE42_PCLMUL", 
+"-DDEFLATE_FILL_WINDOW_SSE2", 
 "-UHAVE_NEWLOCALE", 
 "-UHAVE_XLOCALE_H", 
 "-UHAVE_UNISTD_H", 
