@@ -5,3 +5,4 @@ log.log
 /venv/
 /depot_tools/
 /build/
+/skia_main_bug/

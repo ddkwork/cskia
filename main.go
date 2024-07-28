@@ -18,18 +18,7 @@ import (
 
 func main() {
 	mylog.ChdirToGithubWorkspace()
-	//C:\Users\Admin\Desktop>where python
-	//C:\Users\Admin\AppData\Local\Microsoft\WindowsApps\python.exe
-	//C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe
-	//stream.RunCommand("where python")//todo bug
-
-	// 查找 python 的路径
-	out, err := exec.Command("where", "python").Output()
-	if err != nil {
-		fmt.Println("Error finding python:", err)
-		return
-	}
-
+	out := stream.RunCommandArgs("where", "python").Output.String()
 	index := 0
 	pythonPaths := strings.Split(string(out), "\n")
 	for i, path := range pythonPaths {
@@ -40,8 +29,14 @@ func main() {
 	}
 
 	pythonPath := pythonPaths[index]
+	if filepath.Base(filepath.Dir(pythonPath)) == "WindowsApps" {
+		stream.RunCommandArgs("del", pythonPath)
+		stream.RunCommandArgs("del", strings.Replace(pythonPath, "python.exe", "pythonw3.exe", 1))
+		panic("python path is WindowsApps")
+	}
 	pythonPath = filepath.Dir(pythonPath)
 	println(pythonPath)
+	stream.CopyFile(filepath.Join(pythonPath, "python.exe"), filepath.Join(pythonPath, "python3.exe"))
 	AppendPathEnvWindows(pythonPath)
 	if !isAdmin() {
 		runMeElevated()
@@ -56,32 +51,14 @@ func main() {
 	//	return
 	//}
 
-	out, err = exec.Command("cmd", "/C", "echo %PATH%").Output()
-	if err != nil {
-		fmt.Println("Error getting PATH:", err)
-		return
-	}
-	currentPath := strings.TrimSpace(string(out))
-
-	// 假设pythonPath是你想要添加的Python路径
-
-	// 将Python路径添加到PATH的最前面
+	currentPath := strings.TrimSpace(stream.RunCommandArgs("cmd", "/C", "echo %PATH%").Output.String()) //todo bug
 	newPath := fmt.Sprintf("%s;%s", pythonPath, currentPath)
-
-	// 使用setx命令设置新的PATH
-	cmd := exec.Command("setx", "PATH", newPath, "/M")
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("Error setting PATH:", err)
-		return
-	}
-
+	stream.RunCommandArgs("setx", "PATH", newPath, "/M") //todo bug
 	fmt.Println("Path added successfully to PATH:", pythonPath)
-
 	//mylog.Check(addPathToSystemPath(filepath.Dir(pythonPath)))
 
 	// 使用 setx 命令将路径设置为系统的环境变量
-	//cmd := exec.Command("setx", "PYTHON_PATH", pythonPath, "/M")
+	//cmd := exec.Command("setx", "PYTHON_PATH", pythonPath, "/M") //论顺序优先级的重要性
 	//
 	//err = cmd.Run()
 	//if err != nil {
@@ -144,7 +121,7 @@ func main() {
 	buildDir := "out/Static"
 	mylog.Check(stream.CreatDirectory(buildDir))
 	args := fmt.Sprintf("--args=%s %s", COMMON_ARGS, PLATFORM_ARGS)
-	cmd = exec.Command("gn", "gen", "out/Static", "--args=", args)
+	cmd := exec.Command("gn", "gen", "out/Static", "--args=", args)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error running gn:", err)
@@ -153,8 +130,9 @@ func main() {
 	}
 	log.Println("gn gen args success")
 
-	//gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py
-	//gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py
+	//需要手动清空才会生成
+	stream.RunCommand("gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py")
+	stream.RunCommand("gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py")
 	//  ide="vs2022"
 	//  sln="skia"
 
