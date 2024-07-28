@@ -109,7 +109,7 @@ func main() {
 	AppendPathEnvWindows("depot_tools")
 
 	mylog.Info("num cpu", runtime.NumCPU())
-	stream.CopyFile("DEPS_github", "skia/DEPS")
+	//stream.CopyFile("DEPS_github", "skia/DEPS")
 
 	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
@@ -131,7 +131,7 @@ func main() {
 #include "include/docs/SkPDFDocument.h"`, 1)
 		stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
 	}
-	log.Println("add c bind fiels")
+	log.Println("add c api files")
 
 	mylog.Check(os.Chdir("skia"))
 	mylog.Info("Chdir to", stream.RunDir())
