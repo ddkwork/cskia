@@ -103,7 +103,7 @@ func main() {
 
 	if mylog.IsAction {
 		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-		stream.RunCommand("git clone --progress -b main https://github.com/google/skia.git")
+		stream.RunCommand("git clone --progress -b chrome/m118 https://github.com/google/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
@@ -235,7 +235,7 @@ const (
   skia_use_zlib=true 
 `
 	PLATFORM_ARGS = ` 
-is_component_build=false 
+is_component_build=true
 skia_enable_fontmgr_win=true 
 skia_use_fonthost_mac=false 
 skia_enable_fontmgr_fontconfig=false 
@@ -250,7 +250,7 @@ extra_cflags=[
 "-UHAVE_UNISTD_H", 
 "-UHAVE_SYS_MMAN_H", 
 "-UHAVE_MMAP", 
-"-UHAVE_PTHREAD" 
+"-UHAVE_PTHREAD",
 ] 
 extra_ldflags=[ 
 "/defaultlib:opengl32", 
@@ -312,3 +312,18 @@ if (target_os == "win") {`, 1)
 //	}
 //}
 //stream.WriteTruncate("skia/skia/DEPS", buffer.Bytes())
+
+/* working
+、编译skia（编译器：LLVM）
+（1）编译64位的Lib（x64版本）
+首先进入VS 2022的64位命令行编译环境: （x64 Native Tools Command Prompt for VS 2022）
+进入skia源码目录：
+> cd /d D:\develop\skia
+编译skia静态库（Release版，官方版，最小依赖）
+.\bin\gn.exe gen out/LLVM.x64.Release --ide="vs2022" --sln="skia" --args="target_cpu=\"x64\" cc=\"clang\" cxx=\"clang++\" clang_win=\"C:/LLVM\" clang_win_version=\"18\" is_trivial_abi=false is_official_build=true skia_use_system_libpng=false skia_use_system_libjpeg_turbo=false skia_use_system_zlib=false skia_use_icu=false skia_use_expat=false skia_use_libwebp_decode=false skia_use_libwebp_encode=false skia_use_xps=false skia_enable_pdf=false is_debug=false"
+ninja -C out/LLVM.x64.Release
+编译skia静态库（Debug版，非官方版，完整）
+.\bin\gn.exe gen out/LLVM.x64.Debug --ide="vs2022" --sln="skia" --args="target_cpu=\"x64\" cc=\"clang\" cxx=\"clang++\" clang_win=\"C:/LLVM\" clang_win_version=\"18\" is_trivial_abi=false is_debug=true extra_cflags=[\"/MTd\"]"
+ninja -C out/LLVM.x64.Debug 如果需要重新编译，可用以下命令清理编译的中间文件等文件：
+ninja -C out/LLVM.x64.Debug -t clean
+*/
