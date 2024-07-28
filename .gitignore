@@ -1,8 +1,4 @@
 /skia
 /dist
 .idea
-log.log
-/venv/
-/depot_tools/
-/build/
-/skia_main_bug/
+skia_main_bug

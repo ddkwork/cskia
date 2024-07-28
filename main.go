@@ -80,16 +80,12 @@ func main() {
 
 	if mylog.IsAction {
 		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-
-		//DEPOT_TOOLS_COMMIT=5decb175432cb284b6f8ee102dc1b908b58d8e41
-		//SKIA_BRANCH=chrome/m110
 		stream.RunCommand("git clone --progress -b chrome/m110 https://github.com/google/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
 
 	mylog.Info("num cpu", runtime.NumCPU())
-	//stream.CopyFile("DEPS_github", "skia/DEPS")
 
 	buffer := stream.NewBuffer("skia\\gn\\toolchain\\BUILD.gn")
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
@@ -136,8 +132,6 @@ func main() {
 	//需要手动清空才会生成
 	stream.RunCommand("gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py")
 	stream.RunCommand("gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py")
-	//  ide="vs2022"
-	//  sln="skia"
 
 	//  #dlsymutil_pool_depth exec_script("num_cpus.py", [], "value")
 	//dlsymutil_pool_depth =8
