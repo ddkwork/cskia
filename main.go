@@ -51,10 +51,10 @@ func main() {
 	//	return
 	//}
 
-	currentPath := strings.TrimSpace(stream.RunCommandArgs("cmd", "/C", "echo %PATH%").Output.String()) //todo bug
-	newPath := fmt.Sprintf("%s;%s", pythonPath, currentPath)
-	stream.RunCommandArgs("setx", "PATH", newPath, "/M") //todo bug
-	fmt.Println("Path added successfully to PATH:", pythonPath)
+	//currentPath := strings.TrimSpace(stream.RunCommandArgs("cmd", "/C", "echo %PATH%").Output.String()) //todo bug
+	//newPath := fmt.Sprintf("%s;%s", pythonPath, currentPath)
+	//stream.RunCommandArgs("setx", "PATH", newPath, "/M") //todo bug
+	//fmt.Println("Path added successfully to PATH:", pythonPath)
 	//mylog.Check(addPathToSystemPath(filepath.Dir(pythonPath)))
 
 	// 使用 setx 命令将路径设置为系统的环境变量
