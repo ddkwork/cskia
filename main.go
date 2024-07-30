@@ -29,10 +29,10 @@ func main() {
 	}
 
 	pythonPath := pythonPaths[index]
-	if filepath.Base(filepath.Dir(pythonPath)) == "WindowsApps" {
-		stream.RunCommandArgs("del", pythonPath)
-		stream.RunCommandArgs("del", strings.Replace(pythonPath, "python.exe", "pythonw3.exe", 1))
-		panic("python path is WindowsApps")
+	WindowsApps := "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WindowsApps"
+	if stream.IsDir(WindowsApps) {
+		stream.RunCommandArgs("del", filepath.Join(WindowsApps, "python.exe"))
+		stream.RunCommandArgs("del", filepath.Join(WindowsApps, "python3.exe"))
 	}
 	pythonPath = filepath.Dir(pythonPath)
 	println(pythonPath)
@@ -197,6 +197,7 @@ const (
   skia_use_fixed_gamma_text=false 
   skia_use_fontconfig=false 
   skia_use_gl=true 
+  skia_use_vulkan=true
   skia_use_harfbuzz=false 
   skia_use_icu=false 
   skia_use_libheif=false 
@@ -208,7 +209,6 @@ const (
   skia_use_system_libpng=false 
   skia_use_system_libwebp=false 
   skia_use_system_zlib=false 
-  skia_use_vulkan=false 
   skia_use_wuffs=true 
   skia_use_xps=false 
   skia_use_zlib=true 
