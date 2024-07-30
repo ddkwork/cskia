@@ -79,8 +79,9 @@ func main() {
 	stream.RunCommand("gn.exe --version")
 
 	if mylog.IsAction {
-		stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
-		stream.RunCommand("git clone --progress -b chrome/m110 https://github.com/google/skia.git")
+		//stream.RunCommand("git clone --progress https://chromium.googlesource.com/chromium/tools/depot_tools.git")
+		//stream.RunCommand("git clone --progress -b chrome/m110 https://github.com/google/skia.git")
+		stream.RunCommand("git clone --progress -b  skiasharp https://github.com/mono/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
 	AppendPathEnvWindows("depot_tools")
@@ -91,23 +92,23 @@ func main() {
 	buffer.Replace(`  dlsymutil_pool_depth = exec_script("num_cpus.py", [], "value")`, `  dlsymutil_pool_depth = `+fmt.Sprint(runtime.NumCPU()), 1)
 	stream.WriteTruncate("skia\\gn\\toolchain\\BUILD.gn", buffer.Bytes())
 
-	stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
-	stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
+	//stream.CopyFile("capi/sk_capi.h", "skia/include/sk_capi.h")
+	//stream.CopyFile("capi/sk_capi.cpp", "skia/src/sk_capi.cpp")
 
-	gni := stream.NewBuffer("skia/gn/core.gni")
-	if !gni.Contains("sk_capi.cpp") {
-		gni.Replace(`skia_core_sources = [`, `skia_core_sources = [
-  "$_src/sk_capi.cpp",`, 1)
-		stream.WriteTruncate("skia/gn/core.gni", gni.Bytes())
-	}
+	//gni := stream.NewBuffer("skia/gn/core.gni")
+	//if !gni.Contains("sk_capi.cpp") {
+	//	gni.Replace(`skia_core_sources = [`, `skia_core_sources = [
+	// "$_src/sk_capi.cpp",`, 1)
+	//	stream.WriteTruncate("skia/gn/core.gni", gni.Bytes())
+	//}
 
-	font := stream.NewBuffer("skia/src/pdf/SkPDFSubsetFont.h")
-	if !font.Contains("include/core/SkData.h") {
-		font.Replace(`#include "include/docs/SkPDFDocument.h"`, `#include "include/core/SkData.h"
-#include "include/docs/SkPDFDocument.h"`, 1)
-		stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
-	}
-	log.Println("add c api files")
+	//	font := stream.NewBuffer("skia/src/pdf/SkPDFSubsetFont.h")
+	//	if !font.Contains("include/core/SkData.h") {
+	//		font.Replace(`#include "include/docs/SkPDFDocument.h"`, `#include "include/core/SkData.h"
+	//#include "include/docs/SkPDFDocument.h"`, 1)
+	//		stream.WriteTruncate("skia/src/pdf/SkPDFSubsetFont.h", font.Bytes())
+	//	}
+	//	log.Println("add c api files")
 
 	mylog.Check(os.Chdir("skia"))
 	mylog.Info("Chdir to", stream.RunDir())
@@ -117,10 +118,10 @@ func main() {
 	}
 	//stream.RunCommand("python fetch-ninja")
 
-	buildDir := "out/Static"
+	buildDir := "../out/Static"
 	mylog.Check(stream.CreatDirectory(buildDir))
 	args := fmt.Sprintf("--args=%s %s", COMMON_ARGS, PLATFORM_ARGS)
-	cmd := exec.Command("gn", "gen", "out/Static", "--args=", args)
+	cmd := exec.Command("gn", "gen", "../out/Static", "--args=", args)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error running gn:", err)
@@ -130,14 +131,14 @@ func main() {
 	log.Println("gn gen args success")
 
 	//需要手动清空才会生成
-	stream.RunCommand("gn.exe gen out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py")
-	stream.RunCommand("gn.exe gen out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py")
+	stream.RunCommand("gn.exe gen ../out/config --ide=json --json-ide-script=../../gn/gn_to_cmake.py")
+	stream.RunCommand("gn.exe gen ../out/config --ide=vs --json-ide-script=../../gn/gn_meta_sln.py")
 
 	//  #dlsymutil_pool_depth exec_script("num_cpus.py", [], "value")
 	//dlsymutil_pool_depth =8
 	// todo numberof cpu  test action
 
-	cmd = exec.Command("ninja.exe", "-C", "out/Static", "-v")
+	cmd = exec.Command("ninja.exe", "-C", "../out/Static", "-v")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	log.Println("ninja run")
@@ -149,7 +150,7 @@ func main() {
 	}
 	log.Println("ninja build success")
 
-	filepath.Walk("out/Static", func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk("../out/Static", func(path string, info fs.FileInfo, err error) error {
 		if strings.Contains(path, "obj") {
 			return err
 		}
@@ -157,7 +158,7 @@ func main() {
 		return err
 	})
 
-	stream.CopyFile("out/Static/skia.dll", "../skia.dll")
+	stream.CopyFile("../out/Static/skia.dll", "../skia.dll")
 	mylog.Check(os.Chdir(".."))
 }
 
@@ -175,16 +176,15 @@ const (
   is_debug=false 
   is_official_build=true 
   skia_enable_discrete_gpu=true 
-  skia_enable_flutter_defines=false 
   skia_enable_fontmgr_android=false 
   skia_enable_fontmgr_empty=false 
   skia_enable_fontmgr_fuchsia=false 
   skia_enable_fontmgr_win_gdi=false 
   skia_enable_gpu=true 
-  skia_enable_particles=true 
   skia_enable_pdf=true 
   skia_enable_skottie=false 
   skia_enable_skshaper=true 
+  skia_enable_skshaper_tests=false 
   skia_enable_spirv_validation=false 
   skia_enable_tools=false 
   skia_enable_vulkan_debug_layers=false 
@@ -201,14 +201,15 @@ const (
   skia_use_harfbuzz=false 
   skia_use_icu=false 
   skia_use_libheif=false 
+  skia_use_libjxl_decode=false 
   skia_use_lua=false 
   skia_use_metal=false 
   skia_use_piex=false 
-  skia_use_sfntly=false 
   skia_use_system_libjpeg_turbo=false 
   skia_use_system_libpng=false 
   skia_use_system_libwebp=false 
   skia_use_system_zlib=false 
+  skia_use_vulkan=false 
   skia_use_wuffs=true 
   skia_use_xps=false 
   skia_use_zlib=true 

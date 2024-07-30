@@ -1,5 +1,8 @@
 /skia
 /dist
+/sync/
+/out/
+/cskia-main.zip
+/skia.tar
 .idea
-skia_main_bug
 log.log
