@@ -166,12 +166,12 @@ func AppendPathEnvWindows(newPath string) {
 	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";"+newPath))
 }
 
+// win_toolchain_version="14.40.33807"
 const (
 	COMMON_ARGS = ` 
   win_vc="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC"
   clang_win_version=18
   dlsymutil_pool_depth=8
-  win_toolchain_version="14.40.33807"
   win_sdk_version="10.0.26100.0"
   is_debug=false 
   is_official_build=true 
