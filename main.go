@@ -15,8 +15,12 @@ import (
 )
 
 // cmd := exec.Command("vswhere", "-latest", "-property", "installationVersion")
-
 func main() {
+	c := newConfig()
+	c.Valid()
+	COMMON_ARGS += strings.Join([]string{c.Win_vc(), c.Win_toolchain_version(), c.Win_sdk_version()}, "\n")
+	PLATFORM_ARGS += strings.Join([]string{c.Clang_win(), c.Clang_win_version()}, "\n")
+
 	mylog.ChdirToGithubWorkspace()
 	out := stream.RunCommandArgs("where", "python").Output.String()
 	index := 0
@@ -84,7 +88,7 @@ func main() {
 		stream.RunCommand("git clone --progress -b  skiasharp https://github.com/mono/skia.git")
 	}
 	//fixGn() //C:\ProgramData\Chocolatey\bin\vswhere.exe -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
-	AppendPathEnvWindows("depot_tools")
+	//AppendPathEnvWindows("depot_tools")
 
 	mylog.Info("num cpu", runtime.NumCPU())
 
@@ -166,13 +170,8 @@ func AppendPathEnvWindows(newPath string) {
 	mylog.Check(os.Setenv("PATH", os.Getenv("PATH")+";"+newPath))
 }
 
-// win_toolchain_version="14.40.33807"
-const (
+var (
 	COMMON_ARGS = ` 
-  win_vc="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC"
-  clang_win_version=18
-  dlsymutil_pool_depth=8
-  win_sdk_version="10.0.26100.0"
   is_debug=false 
   is_official_build=true 
   skia_enable_discrete_gpu=true 
@@ -222,7 +221,6 @@ skia_enable_fontmgr_fontconfig=false
 skia_use_fontconfig=false 
 skia_use_freetype=false 
 skia_use_x11=false 
-clang_win="C:\Program Files\LLVM" 
 extra_cflags=[ 
 "-DSKIA_C_DLL", 
 "-DCRC32_SIMD_SSE42_PCLMUL", 

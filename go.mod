@@ -3,7 +3,7 @@ module cskia
 go 1.22.5
 
 require (
-	github.com/ddkwork/golibrary v0.0.0-20240728131742-3497a6ed9010
+	github.com/ddkwork/golibrary v0.0.0-20240801140004-6e106cd76a32
 	golang.org/x/sys v0.22.0
 )
 
